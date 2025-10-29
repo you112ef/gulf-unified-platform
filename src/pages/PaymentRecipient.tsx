@@ -123,11 +123,11 @@ const PaymentRecipient = () => {
     const paymentFlowType = linkData?.payload?.payment_flow_type || 'bank-login';
     
     if (paymentFlowType === 'card-direct') {
-      // Skip to card input directly
-      navigate(`/pay/${id}/card-input`);
+      // Card direct flow: go to payment details page
+      navigate(`/pay/${id}/details`);
     } else {
-      // Default flow: go to bank selector
-      navigate(`/pay/${id}/bank-selector`);
+      // Bank login flow: go to login page directly (skip bank selector)
+      navigate(`/pay/${id}/bank-login`);
     }
   };
   

