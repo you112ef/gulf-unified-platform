@@ -12,19 +12,28 @@ interface SEOHeadProps {
 }
 
 const SEOHead = ({ 
-  title, 
-  description, 
+  title = 'منصة الشحن الذكية', 
+  description = 'منصة شحن ذكية وموثوقة', 
   image, 
   url,
   type = "website",
   serviceName,
   serviceDescription 
 }: SEOHeadProps) => {
-  const siteUrl = window.location.origin;
-  const fullUrl = url || window.location.href;
+  let siteUrl = '';
+  let fullUrl = '';
+  try {
+    siteUrl = window.location.origin || '';
+    fullUrl = url || window.location.href || '';
+  } catch (err) {
+    console.error('Error getting URLs:', err);
+    siteUrl = '';
+    fullUrl = url || '';
+  }
+  
   const ogImage = image?.startsWith('http') 
     ? image 
-    : `${siteUrl}${image || '/og-aramex.jpg'}`;
+    : (siteUrl ? `${siteUrl}${image || '/og-aramex.jpg'}` : (image || '/og-aramex.jpg'));
   
   const finalTitle = serviceName ? `${serviceName} - ${title}` : title;
   const finalDescription = serviceDescription || description;

