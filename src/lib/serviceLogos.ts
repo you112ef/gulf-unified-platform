@@ -184,8 +184,24 @@ export const serviceLogos: Record<string, { logo: string; colors: { primary: str
 };
 
 export const getServiceBranding = (serviceName: string) => {
-  const key = serviceName.toLowerCase();
-  return serviceLogos[key] || {
+  const key = serviceName.toLowerCase().trim();
+  const branding = serviceLogos[key];
+  
+  // Always return service-specific branding - no default generic logo
+  if (branding && branding.logo) {
+    return branding;
+  }
+  
+  // Fallback: try to find similar service (remove country suffixes)
+  const baseKey = key.replace(/^(dhl|qpost|kwpost|omanpost|bahpost)/, '');
+  const fallbackBranding = serviceLogos[baseKey];
+  
+  if (fallbackBranding && fallbackBranding.logo) {
+    return fallbackBranding;
+  }
+  
+  // Last resort: return first available service branding (aramex)
+  return serviceLogos['aramex'] || {
     logo: "",
     colors: {
       primary: "#0EA5E9",

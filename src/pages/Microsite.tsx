@@ -230,18 +230,21 @@ const Microsite = () => {
             )}
             <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/70" />
             
-            {/* Logo Overlay */}
+            {/* Service Logo Overlay - Dynamic based on selected service */}
             <div className="absolute top-4 left-4 sm:top-6 sm:left-6">
-              {serviceBranding?.logo && (
+              {serviceBranding?.logo ? (
                 <div className="bg-white rounded-2xl p-3 sm:p-4 shadow-lg">
                   <img 
                     src={serviceBranding.logo} 
                     alt={serviceName}
-                    className="h-12 sm:h-16 w-auto"
-                    onError={(e) => e.currentTarget.style.display = 'none'}
+                    className="h-12 sm:h-16 w-auto max-w-[200px] object-contain"
+                    onError={(e) => {
+                      console.error('Failed to load service logo:', serviceBranding.logo);
+                      e.currentTarget.style.display = 'none';
+                    }}
                   />
                 </div>
-              )}
+              ) : null}
             </div>
             
             {/* Title Overlay */}

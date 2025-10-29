@@ -230,25 +230,30 @@ const CreateShippingLink = () => {
                 </Select>
               </div>
               
-              {/* Service Logo and Description */}
+              {/* Service Logo and Description - Dynamic service logo */}
               {selectedService && serviceBranding && selectedServiceData && (
-                <div className="p-3 rounded-lg border border-border bg-card/50">
-                  <div className="flex items-center gap-3 mb-2">
-                    {serviceBranding.logo && (
-                      <img 
-                        src={serviceBranding.logo} 
-                        alt={selectedServiceData.name}
-                        className="h-8 object-contain"
-                        onError={(e) => {
-                          e.currentTarget.style.display = 'none';
-                        }}
-                      />
-                    )}
-                    <div>
-                      <h3 className="font-semibold text-sm">{selectedServiceData.name}</h3>
+                <div className="p-4 rounded-lg border-2 border-border bg-card/50" style={{ borderColor: serviceBranding.colors.primary + '30' }}>
+                  <div className="flex items-center gap-4 mb-3">
+                    {serviceBranding.logo ? (
+                      <div className="bg-white rounded-xl p-2 shadow-md">
+                        <img 
+                          src={serviceBranding.logo} 
+                          alt={selectedServiceData.name}
+                          className="h-12 w-auto max-w-[150px] object-contain"
+                          onError={(e) => {
+                            console.error('Failed to load service logo:', serviceBranding.logo);
+                            e.currentTarget.style.display = 'none';
+                          }}
+                        />
+                      </div>
+                    ) : null}
+                    <div className="flex-1">
+                      <h3 className="font-bold text-base mb-1" style={{ color: serviceBranding.colors.primary }}>
+                        {selectedServiceData.name}
+                      </h3>
+                      <p className="text-xs text-muted-foreground">{selectedServiceData.description}</p>
                     </div>
                   </div>
-                  <p className="text-xs text-muted-foreground">{selectedServiceData.description}</p>
                 </div>
               )}
               
