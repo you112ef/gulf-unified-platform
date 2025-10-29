@@ -15,8 +15,9 @@ const PaymentMetaTags = ({ serviceName, serviceKey, amount, title, description }
   const branding = getServiceBranding(actualServiceKey);
   
   const ogTitle = title || `الدفع - ${serviceName}`;
+  // Use company description as primary description when sharing links
   const serviceDescription = branding.description || `خدمة شحن موثوقة`;
-  const ogDescription = description || `صفحة دفع آمنة ومحمية لخدمة ${serviceName} - ${serviceDescription}${amount ? ` - ${amount}` : ''}`;
+  const ogDescription = description || serviceDescription || `صفحة دفع آمنة ومحمية لخدمة ${serviceName}${amount ? ` - ${amount}` : ''}`;
   
   // Use company-specific OG image or hero image
   const ogImage = branding.ogImage 

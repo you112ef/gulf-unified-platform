@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { ArrowLeft, Sparkles, Shield, Zap } from "lucide-react";
 import SEOHead from "@/components/SEOHead";
+import PWAInstallPrompt from "@/components/PWAInstallPrompt";
 
 const Index = () => {
   return (
@@ -107,6 +108,7 @@ const Index = () => {
         </div>
       </section>
     </div>
+    <PWAInstallPrompt />
     </>
   );
 };

@@ -161,9 +161,12 @@ const Microsite = () => {
       }
     }, [isShipping, serviceKey]);
     
-    // Get service description from gccShippingServices
+    // Get service description from serviceBranding first (company description), then from gccShippingServices
     try {
-      if (gccShippingServices && typeof gccShippingServices === 'object') {
+      // Use company branding description as primary
+      if (serviceBranding?.description) {
+        serviceDescription = serviceBranding.description;
+      } else if (gccShippingServices && typeof gccShippingServices === 'object') {
         const allServices = Object.values(gccShippingServices).flat();
         const serviceData = allServices.find((s: any) => s?.key === serviceKey);
         if (serviceData?.description) {
@@ -179,13 +182,13 @@ const Microsite = () => {
       ? `شحنة ${serviceName}` 
       : (payload.chalet_name || 'شاليه');
     
-    // SEO metadata
+    // SEO metadata - use company description prominently
     seoTitle = isShipping 
-      ? `تتبع وتأكيد الدفع - ${serviceName}` 
+      ? `${serviceName} - تتبع وتأكيد الدفع` 
       : `حجز شاليه - ${payload.chalet_name || 'شاليه'}`;
     
     seoDescription = isShipping
-      ? `${serviceDescription} - تتبع شحنتك وأكمل الدفع بشكل آمن`
+      ? `${serviceDescription} - تتبع شحنتك رقم ${payload.tracking_number || ''} وأكمل الدفع بشكل آمن`
       : `احجز ${payload.chalet_name || 'شاليه'} في ${countryData?.nameAr || 'الدولة'} - ${payload.nights || 1} ليلة لـ ${payload.guest_count || 2} ضيف`;
     
     seoImage = serviceBranding?.ogImage || serviceBranding?.heroImage || '/og-aramex.jpg';

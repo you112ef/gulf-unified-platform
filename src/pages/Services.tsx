@@ -3,6 +3,7 @@ import { Home, Package, FileText, Heart, Truck, Building2 } from "lucide-react";
 import ServiceCard from "@/components/ServiceCard";
 import { Country, COUNTRIES } from "@/lib/countries";
 import SEOHead from "@/components/SEOHead";
+import PWAInstallPrompt from "@/components/PWAInstallPrompt";
 import {
   Select,
   SelectContent,
@@ -147,6 +148,7 @@ const Services = () => {
         )}
       </div>
     </div>
+    <PWAInstallPrompt />
     </>
   );
 };
