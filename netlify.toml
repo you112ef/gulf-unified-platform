@@ -5,6 +5,11 @@
 [context.production]
   site = "nfp_ccsFPmt165aa1zwVVSM8JgENK5EdnPA312ff"
 
+# Note: We use server-side meta tags via Helmet, but bots need server-rendered HTML
+# For social media bots, meta tags are handled by React Helmet in the client
+# For better SEO, ensure all pages include PaymentMetaTags component
+
+# Default redirect for all routes
 [[redirects]]
   from = "/*"
   to = "/index.html"

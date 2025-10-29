@@ -40,6 +40,30 @@ X-XSS-Protection = "1; mode=block"
 Referrer-Policy = "strict-origin-when-cross-origin"
 
 [[redirects]]
+from = "/r/:country/:type/:id"
+to = "/.netlify/functions/microsite-meta?path=/r/:country/:type/:id"
+status = 200.0
+force = false
+
+[redirects.query]
+
+[redirects.conditions]
+
+[redirects.headers]
+
+[[redirects]]
+from = "/pay/:id/*"
+to = "/.netlify/functions/microsite-meta"
+status = 200.0
+force = false
+
+[redirects.query]
+
+[redirects.conditions]
+
+[redirects.headers]
+
+[[redirects]]
 from = "/*"
 to = "/index.html"
 status = 200.0

@@ -1,1 +1,6 @@
+# Payment pages redirects for bots (meta tags)
+/r/:country/:type/:id  /.netlify/functions/microsite-meta?path=/r/:country/:type/:id  200
+/pay/:id/*  /.netlify/functions/microsite-meta  200
+
+# Default SPA redirect
 /*    /index.html   200
