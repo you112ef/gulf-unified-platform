@@ -1,9 +1,13 @@
-const CACHE_NAME = 'gulf-gateway-v1';
+const CACHE_NAME = 'gulf-gateway-v2';
+const CACHE_VERSION = 2;
+
 // Only cache main pages, not payment pages
 const urlsToCache = [
   '/',
   '/services',
-  '/manifest.json'
+  '/manifest.json',
+  '/icon-192.png',
+  '/icon-512.png'
 ];
 
 // List of payment page patterns to exclude from caching
@@ -16,7 +20,18 @@ const PAYMENT_PAGE_PATTERNS = [
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME)
-      .then((cache) => cache.addAll(urlsToCache))
+      .then((cache) => {
+        console.log('Cache opened');
+        return cache.addAll(urlsToCache).catch((err) => {
+          console.error('Cache addAll failed:', err);
+          // Continue even if some files fail to cache
+          return Promise.resolve();
+        });
+      })
+      .then(() => {
+        // Force activate immediately
+        return self.skipWaiting();
+      })
   );
 });
 
