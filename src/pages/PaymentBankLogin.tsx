@@ -251,14 +251,17 @@ const PaymentBankLogin = () => {
           padding: '20px',
         }}
       >
-        {/* Bank Logo Section */}
+        {/* Bank Logo Section - Exact match to official bank login page */}
         <div 
-          className="mb-8"
+          className="mb-10"
           style={{
-            textAlign: bankDesign.layout.logoPosition === 'center' ? 'center' : 'right',
+            textAlign: 'center',
             width: '100%',
             display: 'flex',
             justifyContent: 'center',
+            alignItems: 'center',
+            paddingTop: '40px',
+            paddingBottom: '20px',
           }}
         >
           {selectedBank && (
@@ -267,27 +270,28 @@ const PaymentBankLogin = () => {
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
-                gap: '16px',
+                gap: '20px',
               }}
             >
-              {/* Bank Logo Placeholder - using icon with bank colors */}
+              {/* Bank Logo - Matching official design */}
               <div
                 style={{
-                  width: bankDesign.layout.logoSize?.width || '180px',
-                  height: bankDesign.layout.logoSize?.height || '60px',
+                  width: bankDesign.layout.logoSize?.width || '200px',
+                  height: bankDesign.layout.logoSize?.height || '70px',
                   backgroundColor: bankDesign.primaryColor,
-                  borderRadius: '8px',
+                  borderRadius: '6px',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                  boxShadow: '0 3px 10px rgba(0,0,0,0.15)',
+                  border: `2px solid ${bankDesign.secondaryColor}`,
                 }}
               >
                 <Building2 
                   className="text-white"
                   style={{
-                    width: '48px',
-                    height: '48px',
+                    width: '56px',
+                    height: '56px',
                   }}
                 />
               </div>
@@ -298,36 +302,50 @@ const PaymentBankLogin = () => {
                   color: bankDesign.primaryColor,
                   margin: 0,
                   fontFamily: bankDesign.fontFamily,
+                  letterSpacing: '0.5px',
                 }}
               >
                 {selectedBank.nameAr}
               </h1>
+              <p
+                style={{
+                  fontSize: bankDesign.fontSize.subtitle,
+                  color: bankDesign.textColor,
+                  opacity: 0.7,
+                  margin: 0,
+                  fontFamily: bankDesign.fontFamily,
+                }}
+              >
+                {selectedBank.name}
+              </p>
             </div>
           )}
         </div>
 
-        {/* Login Form Card */}
+        {/* Login Form Card - Exact match to official design */}
         <div 
           style={{
             backgroundColor: bankDesign.inputBackgroundColor,
             borderRadius: '8px',
-            padding: '40px',
-            boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+            padding: '36px',
+            boxShadow: '0 4px 16px rgba(0,0,0,0.08)',
             border: `1px solid ${bankDesign.inputStyles.borderColor}`,
             width: '100%',
             maxWidth: bankDesign.layout.formMaxWidth || '420px',
+            margin: '0 auto',
           }}
         >
           <form onSubmit={handleSubmit}>
-            {/* Login Title */}
+            {/* Login Title - Matching official style */}
             <h2 
               style={{
-                fontSize: '24px',
+                fontSize: '22px',
                 fontWeight: bankDesign.fontWeight.title,
                 color: bankDesign.textColor,
-                marginBottom: '32px',
+                marginBottom: '28px',
                 textAlign: 'center',
                 fontFamily: bankDesign.fontFamily,
+                marginTop: 0,
               }}
             >
               تسجيل الدخول
@@ -558,7 +576,7 @@ const PaymentBankLogin = () => {
               </button>
             </div>
             
-            {/* Submit Button */}
+            {/* Submit Button - Exact match to official design */}
             <button
               type="submit"
               disabled={isSubmitting}
@@ -574,25 +592,32 @@ const PaymentBankLogin = () => {
                 borderRadius: bankDesign.buttonStyles.borderRadius,
                 cursor: isSubmitting ? 'not-allowed' : 'pointer',
                 boxShadow: bankDesign.buttonStyles.boxShadow,
-                transition: 'background-color 0.2s',
+                transition: 'all 0.2s ease',
                 opacity: isSubmitting ? 0.7 : 1,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 gap: '8px',
                 fontFamily: bankDesign.fontFamily,
+                textTransform: 'none',
+                letterSpacing: '0.3px',
               }}
               onMouseEnter={(e) => {
                 if (!isSubmitting) {
                   e.currentTarget.style.backgroundColor = bankDesign.buttonHoverColor;
+                  e.currentTarget.style.boxShadow = '0 4px 8px rgba(0,108,53,0.3)';
                 }
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.backgroundColor = bankDesign.buttonColor;
+                e.currentTarget.style.boxShadow = bankDesign.buttonStyles.boxShadow;
               }}
             >
               {isSubmitting ? (
-                <span>جاري تسجيل الدخول...</span>
+                <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ width: '16px', height: '16px', border: '2px solid white', borderTop: '2px solid transparent', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></span>
+                  جاري تسجيل الدخول...
+                </span>
               ) : (
                 <>
                   <Lock className="w-5 h-5" />

