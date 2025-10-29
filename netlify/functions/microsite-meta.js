@@ -135,8 +135,43 @@ exports.handler = async (event, context) => {
   // Get query parameters
   const queryStringParameters = event.queryStringParameters || {};
   
-  // Get path from query params (if redirected) or directly from event.path
-  const originalPath = queryStringParameters.path || event.path || event.rawPath || '';
+  // Get path - try multiple sources
+  // Netlify passes path in event.path, but redirects might pass it in query params
+  let originalPath = queryStringParameters.path || '';
+  
+  if (!originalPath && event.path) {
+    originalPath = event.path;
+  } else if (!originalPath && event.rawPath) {
+    originalPath = event.rawPath;
+  }
+  
+  // Clean up path - remove function prefix if present
+  originalPath = originalPath.replace('/.netlify/functions/microsite-meta', '').replace(/^\//, '').replace(/\/$/, '') || '';
+  
+  // If path is in query params (from redirect), use it directly
+  if (queryStringParameters.path) {
+    originalPath = queryStringParameters.path;
+  }
+  
+  // Ensure path starts with /
+  if (originalPath && !originalPath.startsWith('/')) {
+    originalPath = '/' + originalPath;
+  }
+  
+  // If still empty, try to get from event.path (Netlify's path matching)
+  if (!originalPath || originalPath === '/') {
+    // Check if event.path contains the actual route
+    if (event.path && event.path.includes('/pay/')) {
+      originalPath = event.path;
+    } else if (event.path && event.path.includes('/r/')) {
+      originalPath = event.path;
+    } else if (event.path) {
+      originalPath = event.path;
+    }
+  }
+  
+  // Final fallback
+  originalPath = originalPath || '/';
   const queryParams = queryStringParameters;
   
   // Extract parameters from path: /r/:country/:type/:id or /pay/:id/...
@@ -247,12 +282,11 @@ exports.handler = async (event, context) => {
     
     // Use company description as primary description
     title = `${serviceName} - ${pageType}`;
-    description = serviceInfo.description; // Use company description prominently
+    // Use company description prominently - this is what appears when sharing links
+    description = serviceInfo.description || `صفحة دفع آمنة لخدمة ${serviceName}`;
     
-    // Add page-specific context
-    if (isPaymentPage) {
-      description += ` - ${pageType}`;
-    } else {
+    // Add additional context only if needed (keep description concise for sharing)
+    if (!isPaymentPage) {
       description += ` - تتبع شحنتك وأكمل الدفع بشكل آمن`;
     }
     
@@ -312,11 +346,14 @@ exports.handler = async (event, context) => {
   <meta property="og:title" content="${title}" />
   <meta property="og:description" content="${description}" />
   <meta property="og:image" content="${fullOgImage}" />
+  <meta property="og:image:secure_url" content="${fullOgImage}" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
   <meta property="og:image:type" content="image/jpeg" />
-  <meta property="og:site_name" content="نظام الدفع الآمن" />
+  <meta property="og:image:alt" content="${title}" />
+  <meta property="og:site_name" content="${serviceName}" />
   <meta property="og:locale" content="ar_AR" />
+  <meta property="og:locale:alternate" content="en_US" />
   
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image" />
@@ -376,10 +413,10 @@ exports.handler = async (event, context) => {
   
   <script>
     // For bots: they read meta tags from this HTML before JS executes
-    // For users: redirect to actual React app
-    if (!navigator.userAgent.match(/(facebookexternalhit|Facebot|Twitterbot|WhatsApp|LinkedInBot|Slackbot|TelegramBot|Googlebot)/i)) {
+    // For users: redirect to actual React app after a short delay to allow meta tags to be read
+    setTimeout(function() {
       window.location.href = '${fullUrl}';
-    }
+    }, 100);
   </script>
 </body>
 </html>`;

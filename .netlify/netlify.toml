@@ -1,7 +1,6 @@
 functionsDirectory = "/workspace/netlify/functions"
 functionsDirectoryOrigin = "default"
 headersOrigin = "config"
-redirectsOrigin = "config"
 site = "nfp_ccsFPmt165aa1zwVVSM8JgENK5EdnPA312ff"
 plugins = []
 
@@ -43,7 +42,7 @@ Referrer-Policy = "strict-origin-when-cross-origin"
 from = "/r/:country/:type/:id"
 to = "/.netlify/functions/microsite-meta?path=/r/:country/:type/:id"
 status = 200.0
-force = false
+force = true
 
 [redirects.query]
 
@@ -55,7 +54,7 @@ force = false
 from = "/pay/:id/*"
 to = "/.netlify/functions/microsite-meta"
 status = 200.0
-force = false
+force = true
 
 [redirects.query]
 

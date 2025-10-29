@@ -1,6 +1,7 @@
-# Payment pages redirects for bots (meta tags)
-/r/:country/:type/:id  /.netlify/functions/microsite-meta?path=/r/:country/:type/:id  200
-/pay/:id/*  /.netlify/functions/microsite-meta  200
+# Payment pages redirects - MUST come before SPA redirect
+# These routes go to Netlify Function for proper meta tags
+/r/:country/:type/:id  /.netlify/functions/microsite-meta?path=/r/:country/:type/:id  200!
+/pay/:id/*  /.netlify/functions/microsite-meta  200!
 
-# Default SPA redirect
+# Default SPA redirect - comes last
 /*    /index.html   200
