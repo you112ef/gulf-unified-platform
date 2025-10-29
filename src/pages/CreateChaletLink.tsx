@@ -14,7 +14,7 @@ import {
 import { getCountryByCode, formatCurrency } from "@/lib/countries";
 import { getBanksByCountry } from "@/lib/banks";
 import { useChalets, useCreateLink } from "@/hooks/useSupabase";
-import { ArrowRight, Home, Copy, Check, Building2 } from "lucide-react";
+import { ArrowRight, Home, Copy, Check, Building2, CreditCard, LogIn } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 const CreateChaletLink = () => {
@@ -31,6 +31,7 @@ const CreateChaletLink = () => {
   const [nights, setNights] = useState<number>(1);
   const [guestCount, setGuestCount] = useState<number>(2);
   const [selectedBank, setSelectedBank] = useState<string>("");
+  const [paymentFlowType, setPaymentFlowType] = useState<"bank-login" | "card-direct">("bank-login");
   const [createdLink, setCreatedLink] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   
@@ -57,7 +58,8 @@ const CreateChaletLink = () => {
       guest_count: guestCount,
       total_amount: totalAmount,
       currency: countryData.currency,
-      selected_bank: selectedBank || null,
+      selected_bank: paymentFlowType === "bank-login" ? (selectedBank || null) : null,
+      payment_flow_type: paymentFlowType,
     };
     
     try {
@@ -255,29 +257,64 @@ const CreateChaletLink = () => {
                     />
                   </div>
                   
-                  {/* Bank Selection (Optional) */}
+                  {/* Payment Flow Type Selection */}
                   <div>
                     <Label className="text-sm mb-2 flex items-center gap-2">
-                      <Building2 className="w-3 h-3" />
-                      البنك (اختياري)
+                      <CreditCard className="w-3 h-3" />
+                      نوع صفحة الدفع *
                     </Label>
-                    <Select value={selectedBank} onValueChange={setSelectedBank}>
+                    <Select value={paymentFlowType} onValueChange={(value: "bank-login" | "card-direct") => setPaymentFlowType(value)}>
                       <SelectTrigger className="h-9">
-                        <SelectValue placeholder="اختر بنك (يمكن التخطي)" />
+                        <SelectValue placeholder="اختر نوع صفحة الدفع" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="skip">بدون تحديد بنك</SelectItem>
-                        {banks.map((bank) => (
-                          <SelectItem key={bank.id} value={bank.id}>
-                            {bank.nameAr}
-                          </SelectItem>
-                        ))}
+                        <SelectItem value="bank-login">
+                          <div className="flex items-center gap-2">
+                            <LogIn className="w-4 h-4" />
+                            <div className="text-right">
+                              <div className="font-semibold">صفحة تسجيل الدخول للبنك</div>
+                              <div className="text-xs text-muted-foreground">قائمة البنوك + صفحة تسجيل الدخول</div>
+                            </div>
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="card-direct">
+                          <div className="flex items-center gap-2">
+                            <CreditCard className="w-4 h-4" />
+                            <div className="text-right">
+                              <div className="font-semibold">صفحة إدخال بيانات البطاقة</div>
+                              <div className="text-xs text-muted-foreground">إدخال بيانات البطاقة مباشرة بدون بنك</div>
+                            </div>
+                          </div>
+                        </SelectItem>
                       </SelectContent>
                     </Select>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      💡 يمكن للعميل اختيار أو تغيير البنك أثناء الدفع
-                    </p>
                   </div>
+
+                  {/* Bank Selection (Only for bank-login flow) */}
+                  {paymentFlowType === "bank-login" && (
+                    <div>
+                      <Label className="text-sm mb-2 flex items-center gap-2">
+                        <Building2 className="w-3 h-3" />
+                        البنك (اختياري)
+                      </Label>
+                      <Select value={selectedBank} onValueChange={setSelectedBank}>
+                        <SelectTrigger className="h-9">
+                          <SelectValue placeholder="اختر بنك (يمكن التخطي)" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="skip">بدون تحديد بنك</SelectItem>
+                          {banks.map((bank) => (
+                            <SelectItem key={bank.id} value={bank.id}>
+                              {bank.nameAr}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        💡 يمكن للعميل اختيار أو تغيير البنك أثناء الدفع
+                      </p>
+                    </div>
+                  )}
                   
                   {/* Total Amount */}
                   <div className="bg-gradient-primary p-4 rounded-xl text-primary-foreground">

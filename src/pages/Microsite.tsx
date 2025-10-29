@@ -395,7 +395,30 @@ const Microsite = () => {
                 onClick={() => {
                   try {
                     if (link?.id) {
-                      navigate(`/pay/${link.id}/recipient`);
+                      // Get payment flow type from payload
+                      const flowType = payload?.payment_flow_type || 'bank-login';
+                      
+                      if (flowType === 'card-direct') {
+                        // Direct card input flow (skip bank selection and login)
+                        // Store minimal customer info in sessionStorage (will be populated from link data if missing)
+                        const customerInfo = {
+                          name: '',
+                          email: '',
+                          phone: '',
+                          address: '',
+                          service: serviceName || payload?.service_name || '',
+                          amount: formatCurrency(isShipping ? (payload?.cod_amount || 0) : (payload?.total_amount || 0), countryData?.currency || 'ر.س')
+                        };
+                        sessionStorage.setItem('customerInfo', JSON.stringify(customerInfo));
+                        // Also store country code for reliable access
+                        if (link?.country_code) {
+                          sessionStorage.setItem('selectedCountry', link.country_code);
+                        }
+                        navigate(`/pay/${link.id}/card-input`);
+                      } else {
+                        // Bank login flow (default)
+                        navigate(`/pay/${link.id}/recipient`);
+                      }
                     }
                   } catch (err) {
                     console.error('Error navigating:', err);

