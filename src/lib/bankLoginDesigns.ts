@@ -12,6 +12,11 @@ export interface BankLoginDesign {
   buttonHoverColor: string;
   linkColor: string;
   
+  // Logo and Images
+  logo?: string;
+  backgroundImage?: string;
+  backgroundPattern?: string;
+  
   // Typography
   fontFamily: string;
   fontSize: {
@@ -59,6 +64,12 @@ export interface BankLoginDesign {
     maxWidth: string;
     direction: 'rtl' | 'ltr';
     logoPosition: 'top' | 'center' | 'left';
+    logoSize?: {
+      width: string;
+      height: string;
+    };
+    containerPadding?: string;
+    formMaxWidth?: string;
   };
   
   // Placeholder text
@@ -154,23 +165,35 @@ export const BANK_LOGIN_DESIGNS: Record<string, BankLoginDesign> = {
     ...defaultDesign,
     primaryColor: '#006C35',
     secondaryColor: '#004A2C',
-    backgroundColor: '#F5F5F5',
+    backgroundColor: '#F8F9FA',
     inputBackgroundColor: '#FFFFFF',
     buttonColor: '#006C35',
     buttonHoverColor: '#005029',
-    fontFamily: '"Tahoma", "Arial", sans-serif',
+    fontFamily: '"Tahoma", "Arial", "Helvetica", sans-serif',
     fontSize: {
-      title: '30px',
+      title: '28px',
       subtitle: '16px',
       body: '14px',
       small: '12px',
       input: '16px',
-      button: '18px',
+      button: '16px',
+    },
+    fontWeight: {
+      title: 700,
+      subtitle: 500,
+      body: 400,
+      button: 600,
+    },
+    spacing: {
+      containerPadding: '40px 20px',
+      inputMarginBottom: '20px',
+      buttonMarginTop: '24px',
+      sectionGap: '32px',
     },
     inputStyles: {
       borderRadius: '4px',
       borderWidth: '1px',
-      borderColor: '#DDDDDD',
+      borderColor: '#D1D5DB',
       height: '50px',
       padding: '14px 16px',
     },
@@ -178,7 +201,18 @@ export const BANK_LOGIN_DESIGNS: Record<string, BankLoginDesign> = {
       borderRadius: '4px',
       height: '50px',
       padding: '14px 32px',
-      boxShadow: '0 2px 8px rgba(0,108,53,0.3)',
+      boxShadow: '0 2px 6px rgba(0,108,53,0.25)',
+    },
+    layout: {
+      maxWidth: '100%',
+      direction: 'rtl',
+      logoPosition: 'center',
+      logoSize: {
+        width: '180px',
+        height: '60px',
+      },
+      containerPadding: '0',
+      formMaxWidth: '420px',
     },
     placeholders: {
       username: 'اسم المستخدم أو رقم الهوية',

