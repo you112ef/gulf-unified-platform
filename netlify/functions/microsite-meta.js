@@ -229,6 +229,8 @@ exports.handler = async (event, context) => {
   let description = "";
   let ogImage = "/og-aramex.jpg";
   let serviceKey = 'aramex'; // fallback
+  // Site name for OG meta; set per type below to avoid undefined references
+  let metaSiteName = 'منصة الشحن الذكية';
   
   if (type === "shipping") {
     // Determine service key from multiple sources
@@ -253,6 +255,7 @@ exports.handler = async (event, context) => {
     }
     
     const serviceName = linkData?.payload?.service_name || serviceInfo.name;
+    metaSiteName = serviceName;
     
     // Determine if this is a payment page or microsite
     const isPaymentPage = originalPath.startsWith('/pay/');
@@ -300,11 +303,12 @@ exports.handler = async (event, context) => {
     ogImage = serviceInfo.ogImage;
   } else if (type === "chalet") {
     const chaletName = linkData?.payload?.chalet_name || 'شاليه';
-    const isPaymentPage = path.startsWith('/pay/');
+    const isPaymentPage = originalPath.startsWith('/pay/');
     const pageType = isPaymentPage ? 'دفع حجز شاليه' : 'حجز شاليه';
     
     title = `${pageType} - ${chaletName} في ${country.nameAr}`;
     description = `احجز ${chaletName} في ${country.nameAr} - ${isPaymentPage ? 'أكمل الدفع بشكل آمن ومحمي' : 'نظام دفع آمن ومحمي'}`;
+    metaSiteName = `${chaletName} - ${country.nameAr}`;
     
     // Add guest count and nights if available
     if (linkData?.payload?.guest_count && linkData?.payload?.nights) {
@@ -361,7 +365,7 @@ exports.handler = async (event, context) => {
   <meta property="og:image:height" content="630" />
   <meta property="og:image:type" content="image/jpeg" />
   <meta property="og:image:alt" content="${title}" />
-  <meta property="og:site_name" content="${serviceName}" />
+  <meta property="og:site_name" content="${metaSiteName}" />
   <meta property="og:locale" content="ar_AR" />
   <meta property="og:locale:alternate" content="en_US" />
   
